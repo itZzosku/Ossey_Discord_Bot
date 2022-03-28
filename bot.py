@@ -120,4 +120,11 @@ async def chesstv(ctx):
     await ctx.respond(embed=embed)
 
 
+@bot.command
+@lightbulb.command("jp", "Link to JP")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def jp(ctx):
+    await ctx.respond("https://vitsionline.com/jp.jpg")
+
+
 bot.run()
