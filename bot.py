@@ -1,10 +1,13 @@
 import hikari
 import lightbulb
-import requests
 import datetime
 from decimal import Decimal
 import lichess.api
 import random
+import requests
+import json
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 
 def read_token():
@@ -13,18 +16,71 @@ def read_token():
         return lines[0].strip()
 
 
+def read_warcraftlogsurl():
+    with open("token.txt", "r") as f:
+        lines = f.readlines()
+        return lines[1].strip()
+
+
 token = read_token()
+
+warcraftlogsurl = read_warcraftlogsurl()
 
 bot = lightbulb.BotApp(
     token=token,
     prefix="/",
+    intents=hikari.Intents.ALL,
     default_enabled_guilds=(411182531254288385)
 )
 
 
-@bot.listen(hikari.StartedEvent)
-async def on_stared(event):
+@bot.listen(hikari.StartingEvent)
+async def on_starting(_: hikari.StartingEvent) -> None:
+    # This event fires once, while the BotApp is starting.
+    bot.d.sched = AsyncIOScheduler()
+    bot.d.sched.start()
     print("Bot has started!")
+
+
+async def mightytsuulogs() -> None:
+    url = warcraftlogsurl
+    logsdata = requests.get(url)
+    data = logsdata.content
+    with open('logsdata.json', 'wb') as f:
+        f.write(data)
+
+    myjsonfile = open('logsdata.json', 'r')
+    jsondata = myjsonfile.read()
+
+    jsondict = json.loads(jsondata)
+    first = list(jsondict)[0]
+    logsid = (first['id'])
+    f = open("previouslogsid.txt", "r")
+    previouslogsid = f.read()
+
+    if logsid != previouslogsid:
+        title = (first['title'])
+        owner = (first['owner'])
+        link = "https://www.warcraftlogs.com/reports/" + logsid
+        embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x521705)
+        embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
+        embed.add_field(name="Title:", value=f'{title}', inline=True)
+        embed.add_field(name="Author:", value=f'{owner}', inline=True)
+        embed.add_field(name="Link:", value=f'{link}', inline=False)
+        await bot.rest.create_message(718877818137739392, embed)
+        print("Latest logs has been announced ID:" + logsid)
+        f = open("previouslogsid.txt", "w")
+        f.write(logsid)
+        f.close()
+
+    else:
+        print("Latest logs has already been announced ID:" + previouslogsid)
+
+
+@bot.listen(hikari.StartedEvent)
+async def on_started(_: hikari.StartedEvent) -> None:
+    # This event fires once, when the BotApp is fully started.
+    bot.d.sched.add_job(mightytsuulogs, CronTrigger(second="*/30"))
 
 
 @bot.command
