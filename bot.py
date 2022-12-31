@@ -1,6 +1,5 @@
 import hikari
 import lightbulb
-import datetime
 from decimal import Decimal
 import lichess.api
 import random
@@ -30,7 +29,7 @@ bot = lightbulb.BotApp(
     token=token,
     prefix="/",
     intents=hikari.Intents.ALL,
-    default_enabled_guilds=(411182531254288385)
+    default_enabled_guilds=411182531254288385
 )
 
 
@@ -77,6 +76,7 @@ async def mightytsuulogs() -> None:
         endtimestring.replace(" ", "").rstrip(endtimestring[-3:]).upper()
         endtimeformatted = "<t:" + endtimestring + ":R>"
         link = "https://www.warcraftlogs.com/reports/" + logsid
+
         embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x521705)
         embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
         embed.add_field(name="Title:", value=f'{title}', inline=True)
@@ -87,13 +87,14 @@ async def mightytsuulogs() -> None:
         embed.add_field(name="‎", value=f'‎', inline=True)
         embed.add_field(name="Link:", value=f'{link}', inline=False)
         await bot.rest.create_message(718877818137739392, embed)
-        print("Latest logs has been announced ID:" + logsid)
+
+        print("Latest logs has been announced ID: " + logsid)
         f = open("previouslogsid.txt", "w")
         f.write(logsid)
         f.close()
 
     else:
-        print("Latest logs has already been announced ID:" + previouslogsid)
+        print("Latest logs has already been announced ID: " + previouslogsid)
 
 
 @bot.command
