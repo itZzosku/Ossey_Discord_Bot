@@ -126,12 +126,7 @@ async def telemetry(ctx):
     pressurelong = Decimal(r_temp['Pressure'])
 
     timestamp_string = (r_temp['Time'])
-    timestamp_object = int(timestamp_string)
-
-    cutime = datetime.datetime.now()
-    seconds_since_epoch = int(cutime.timestamp())
-
-    dtime = seconds_since_epoch - timestamp_object
+    timestamp_string_formatted = "<t:" + timestamp_string + ":R>"
 
     temperature = round(temperaturelong, 1)
     humidity = round(humiditylong, 0)
@@ -142,7 +137,7 @@ async def telemetry(ctx):
     embed.add_field(name="Temperature:", value=f'{temperature} °C', inline=True)
     embed.add_field(name="Humidity:", value=f'{humidity} %', inline=True)
     embed.add_field(name="Pressure:", value=f'{pressure} hPa', inline=True)
-    embed.add_field(name="Time from measurement:", value=f'{dtime} Seconds', inline=False)
+    embed.add_field(name="Time from measurement:", value=f'{timestamp_string_formatted}', inline=False)
     await ctx.respond(embed=embed)
 
 
