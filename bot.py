@@ -42,6 +42,12 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     print("Bot has started!")
 
 
+@bot.listen(hikari.StartedEvent)
+async def on_started(_: hikari.StartedEvent) -> None:
+    # This event fires once, when the BotApp is fully started.
+    bot.d.sched.add_job(mightytsuulogs, CronTrigger(minute="*/1"))
+
+
 async def mightytsuulogs() -> None:
     url = warcraftlogsurl
     logsdata = requests.get(url)
@@ -61,11 +67,24 @@ async def mightytsuulogs() -> None:
     if logsid != previouslogsid:
         title = (first['title'])
         owner = (first['owner'])
+        starttime = (first['start'])
+        startimestring = str(starttime)
+        startimestring = startimestring[:-3]
+        starttimeformatted = "<t:" + startimestring + ":R>"
+        endtime = (first['end'])
+        endtimestring = str(endtime)
+        endtimestring = endtimestring[:-3]
+        endtimestring.replace(" ", "").rstrip(endtimestring[-3:]).upper()
+        endtimeformatted = "<t:" + endtimestring + ":R>"
         link = "https://www.warcraftlogs.com/reports/" + logsid
         embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x521705)
         embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
         embed.add_field(name="Title:", value=f'{title}', inline=True)
         embed.add_field(name="Author:", value=f'{owner}', inline=True)
+        embed.add_field(name="‎", value=f'‎', inline=True)
+        embed.add_field(name="Start time:", value=f'{starttimeformatted}', inline=True)
+        embed.add_field(name="End time:", value=f'{endtimeformatted}', inline=True)
+        embed.add_field(name="‎", value=f'‎', inline=True)
         embed.add_field(name="Link:", value=f'{link}', inline=False)
         await bot.rest.create_message(718877818137739392, embed)
         print("Latest logs has been announced ID:" + logsid)
@@ -75,12 +94,6 @@ async def mightytsuulogs() -> None:
 
     else:
         print("Latest logs has already been announced ID:" + previouslogsid)
-
-
-@bot.listen(hikari.StartedEvent)
-async def on_started(_: hikari.StartedEvent) -> None:
-    # This event fires once, when the BotApp is fully started.
-    bot.d.sched.add_job(mightytsuulogs, CronTrigger(second="*/30"))
 
 
 @bot.command
