@@ -61,9 +61,9 @@ async def on_starting(_: hikari.StartingEvent) -> None:
 @bot.listen(hikari.StartedEvent)
 async def on_started(_: hikari.StartedEvent) -> None:
     # This event fires once, when the BotApp is fully started.
-    bot.d.sched.add_job(mightytsuulogs, CronTrigger(minute="*/1"))
-    bot.d.sched.add_job(pohjoinenlogs, CronTrigger(minute="*/3"))
-    bot.d.sched.add_job(taikaolennotlogs, CronTrigger(minute="*/3"))
+    bot.d.sched.add_job(mightytsuulogs, CronTrigger(minute="*/1"), misfire_grace_time=None)
+    bot.d.sched.add_job(pohjoinenlogs, CronTrigger(minute="*/1"), misfire_grace_time=None)
+    bot.d.sched.add_job(taikaolennotlogs, CronTrigger(minute="*/1"), misfire_grace_time=None)
 
 
 async def mightytsuulogs() -> None:
@@ -96,7 +96,7 @@ async def mightytsuulogs() -> None:
         endtimeformatted = "<t:" + endtimestring + ":R>"
         link = "https://www.warcraftlogs.com/reports/" + logsid
 
-        embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x521705)
+        embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x00FF00)
         embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
         embed.add_field(name="Title:", value=f'{title}', inline=True)
         embed.add_field(name="Author:", value=f'{owner}', inline=True)
@@ -146,7 +146,7 @@ async def pohjoinenlogs() -> None:
         endtimeformatted = "<t:" + endtimestring + ":R>"
         link = "https://www.warcraftlogs.com/reports/" + logsid
 
-        embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x521705)
+        embed = hikari.Embed(title="New Warcraft Logs has been uploaded by Pohjoinen", color=0xFF0000)
         embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
         embed.add_field(name="Title:", value=f'{title}', inline=True)
         embed.add_field(name="Author:", value=f'{owner}', inline=True)
@@ -196,7 +196,7 @@ async def taikaolennotlogs() -> None:
         endtimeformatted = "<t:" + endtimestring + ":R>"
         link = "https://www.warcraftlogs.com/reports/" + logsid
 
-        embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x521705)
+        embed = hikari.Embed(title="New Warcraft Logs has been uploaded by Taikaolennot", color=0x0000FF)
         embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
         embed.add_field(name="Title:", value=f'{title}', inline=True)
         embed.add_field(name="Author:", value=f'{owner}', inline=True)
