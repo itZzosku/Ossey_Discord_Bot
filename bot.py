@@ -62,8 +62,8 @@ async def on_starting(_: hikari.StartingEvent) -> None:
 async def on_started(_: hikari.StartedEvent) -> None:
     # This event fires once, when the BotApp is fully started.
     bot.d.sched.add_job(mightytsuulogs, CronTrigger(minute="*/1"), misfire_grace_time=None, id="Mighty")
-    bot.d.sched.add_job(pohjoinenlogs, CronTrigger(minute="*/5"), misfire_grace_time=None, id="Pohjoinen")
-    bot.d.sched.add_job(taikaolennotlogs, CronTrigger(minute="*/5"), misfire_grace_time=None, id="Taikaolennot")
+    bot.d.sched.add_job(pohjoinenlogs, CronTrigger(minute="*/1"), misfire_grace_time=None, id="Pohjoinen")
+    bot.d.sched.add_job(taikaolennotlogs, CronTrigger(minute="*/1"), misfire_grace_time=None, id="Taikaolennot")
 
 
 async def mightytsuulogs() -> None:
@@ -117,7 +117,7 @@ async def mightytsuulogs() -> None:
 
 
 async def pohjoinenlogs() -> None:
-    bot.d.sched.reschedule_job("Pohjoinen", trigger='cron', minute="*/5")
+    bot.d.sched.reschedule_job("Pohjoinen", trigger='cron', minute="*/1")
     url = warcraftlogsurl_pohjoinen
     logsdata = requests.get(url)
     data = logsdata.content
@@ -169,7 +169,7 @@ async def pohjoinenlogs() -> None:
 
 
 async def taikaolennotlogs() -> None:
-    bot.d.sched.reschedule_job("Taikaolennot", trigger='cron', minute="*/5")
+    bot.d.sched.reschedule_job("Taikaolennot", trigger='cron', minute="*/1")
     url = warcraftlogsurl_taikaolennot
     logsdata = requests.get(url)
     data = logsdata.content
