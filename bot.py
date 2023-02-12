@@ -167,7 +167,7 @@ async def loctifaslogs() -> None:
         await bot.rest.create_message(718877818137739392, embed)
 
         print("Latest logs has been announced ID: " + logsid)
-        f = open("previouslogsid_mightytsuu.txt", "w")
+        f = open("previouslogsid_loctifas.txt", "w")
         f.write(logsid)
         f.close()
 
