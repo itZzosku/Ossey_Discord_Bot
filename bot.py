@@ -21,21 +21,29 @@ def read_warcraftlogsurl_mightytsuu():
         return lines[1].strip()
 
 
-def read_warcraftlogsurl_pohjoinen():
+def read_warcraftlogsurl_loctifas():
     with open("token.txt", "r") as f:
         lines = f.readlines()
         return lines[2].strip()
 
 
-def read_warcraftlogsurl_taikaolennot():
+def read_warcraftlogsurl_pohjoinen():
     with open("token.txt", "r") as f:
         lines = f.readlines()
         return lines[3].strip()
 
 
+def read_warcraftlogsurl_taikaolennot():
+    with open("token.txt", "r") as f:
+        lines = f.readlines()
+        return lines[4].strip()
+
+
 token = read_token()
 
 warcraftlogsurl_mightytsuu = read_warcraftlogsurl_mightytsuu()
+
+warcraftlogsurl_loctifas = read_warcraftlogsurl_loctifas()
 
 warcraftlogsurl_pohjoinen = read_warcraftlogsurl_pohjoinen()
 
@@ -62,6 +70,7 @@ async def on_starting(_: hikari.StartingEvent) -> None:
 async def on_started(_: hikari.StartedEvent) -> None:
     # This event fires once, when the BotApp is fully started.
     bot.d.sched.add_job(mightytsuulogs, CronTrigger(minute="*/1"), misfire_grace_time=None, id="Mighty")
+    bot.d.sched.add_job(loctifaslogs, CronTrigger(minute="*/1"), misfire_grace_time=None, id="Loctifas")
     bot.d.sched.add_job(pohjoinenlogs, CronTrigger(minute="*/1"), misfire_grace_time=None, id="Pohjoinen")
     bot.d.sched.add_job(taikaolennotlogs, CronTrigger(minute="*/1"), misfire_grace_time=None, id="Taikaolennot")
 
@@ -97,6 +106,56 @@ async def mightytsuulogs() -> None:
         link = "https://www.warcraftlogs.com/reports/" + logsid
 
         embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x00FF00)
+        embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
+        embed.add_field(name="Title:", value=f'{title}', inline=True)
+        embed.add_field(name="Author:", value=f'{owner}', inline=True)
+        embed.add_field(name="‎", value=f'‎', inline=True)
+        embed.add_field(name="Start time:", value=f'{starttimeformatted}', inline=True)
+        embed.add_field(name="End time:", value=f'{endtimeformatted}', inline=True)
+        embed.add_field(name="‎", value=f'‎', inline=True)
+        embed.add_field(name="Link:", value=f'{link}', inline=False)
+        await bot.rest.create_message(718877818137739392, embed)
+
+        print("Latest logs has been announced ID: " + logsid)
+        f = open("previouslogsid_mightytsuu.txt", "w")
+        f.write(logsid)
+        f.close()
+
+    else:
+        print("Latest logs has already been announced ID: " + previouslogsid)
+
+
+async def loctifaslogs() -> None:
+    url = warcraftlogsurl_loctifas
+    logsdata = requests.get(url)
+    data = logsdata.content
+    with open('logsdata.json', 'wb') as f:
+        f.write(data)
+
+    myjsonfile = open('logsdata.json', 'r')
+    jsondata = myjsonfile.read()
+
+    jsondict = json.loads(jsondata)
+    first = list(jsondict)[0]
+    logsid = (first['id'])
+    f = open("previouslogsid_loctifas.txt", "r")
+    previouslogsid = f.read()
+
+    if logsid != previouslogsid:
+        title = (first['title'])
+        owner = (first['owner'])
+        starttime = (first['start'])
+        startimestring = str(starttime)
+        startimestring = startimestring[:-3]
+        starttimeformatted = "<t:" + startimestring + ":R>"
+        endtime = (first['end'])
+        endtimestring = str(endtime)
+        endtimestring = endtimestring[:-3]
+        endtimestring.replace(" ", "").rstrip(endtimestring[-3:]).upper()
+        endtimeformatted = "<t:" + endtimestring + ":R>"
+        link = "https://www.warcraftlogs.com/reports/" + logsid
+
+        embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=0x432616)
         embed.set_thumbnail("https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg")
         embed.add_field(name="Title:", value=f'{title}', inline=True)
         embed.add_field(name="Author:", value=f'{owner}', inline=True)
