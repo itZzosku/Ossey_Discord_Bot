@@ -115,7 +115,6 @@ async def mightytsuulogs() -> None:
         embed.add_field(name="‎", value=f'‎', inline=True)
         embed.add_field(name="Link:", value=f'{link}', inline=False)
         await bot.rest.create_message(718877818137739392, embed)
-        await bot.rest.create_message(1129184479953567884, embed)
         await bot.rest.create_message(1129184933320069192, embed)
 
 
@@ -169,7 +168,6 @@ async def loctifaslogs() -> None:
         embed.add_field(name="Link:", value=f'{link}', inline=False)
         await bot.rest.create_message(718877818137739392, embed)
         await bot.rest.create_message(1129184479953567884, embed)
-        await bot.rest.create_message(1129184933320069192, embed)
 
         print("Latest logs has been announced ID: " + logsid)
         f = open("previouslogsid_loctifas.txt", "w")
