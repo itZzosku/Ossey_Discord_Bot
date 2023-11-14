@@ -303,15 +303,6 @@ async def pong(ctx):
     await ctx.respond("Ping!")
 
 
-@bot.command
-@lightbulb.command("cat", "Sends a picture of a cat")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def cat(ctx):
-    url = 'https://aws.random.cat/meow'
-    r = requests.get(url)
-    r_dict = r.json()
-    await ctx.respond(r_dict['file'])
-
 
 @bot.command
 @lightbulb.command("telemetry", "Sends the telemetry of the room")
@@ -437,13 +428,6 @@ async def chesstv(ctx):
     embed.add_field(name="Vallu", value=f'{"https://lichess.org/@/Intoilija/tv"}', inline=False)
     embed.add_field(name="Ietu", value=f'{"https://lichess.org/@/ietu66/tv"}', inline=False)
     await ctx.respond(embed=embed)
-
-
-@bot.command
-@lightbulb.command("jp", "Link to JP")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def jp(ctx):
-    await ctx.respond("https://vitsionline.com/jp.jpg")
 
 
 bot.run()
