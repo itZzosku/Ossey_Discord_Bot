@@ -29,6 +29,11 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Nave/Kazzak/eu",
       "color": "#000000",
       "filename": "previouslogsid_nave.txt"
+    },
+    "Pescorus": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pescorus/Kazzak/eu",
+      "color": "#b45ad9",
+      "filename": "previouslogsid_pescorus.txt"
     }
   }
 }

@@ -32,10 +32,6 @@ token = tokens['token']
 influxdb2_token = tokens['influxdb2_token']
 warcraft_logs_token = tokens['warcraft_logs_token']
 
-channel_id_1 = config['channel_ids']['channel_1']
-channel_id_2 = config['channel_ids']['channel_2']
-channel_id_3 = config['channel_ids']['channel_3']
-
 bot = lightbulb.BotApp(
     token=token,
     prefix="/",
@@ -55,13 +51,14 @@ async def on_starting(_: hikari.StartingEvent) -> None:
 @bot.listen(hikari.StartedEvent)
 async def on_started(_: hikari.StartedEvent) -> None:
     for name, source in config['log_sources'].items():
-        formatted_url = f"{source['url']}?api_key={warcraft_logs_token}"  # Append the token to the URL
+        formatted_url = f"{source['url']}?api_key={warcraft_logs_token}"
         color_int = int(source['color'].lstrip('#'), 16)
         schedule_log_check(name, formatted_url, f"logs/{source['filename']}", color_int)
 
 
 def schedule_log_check(job_id, url, filename, color):
-    bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute="*/1"), args=[url, filename, color],
+    bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute="*/1"),
+                        args=[url, filename, color, job_id],
                         misfire_grace_time=None, id=job_id)
 
 
@@ -69,7 +66,7 @@ def hex_to_int(hex_color):
     return int(hex_color.lstrip('#'), 16)
 
 
-async def check_and_announce_logs(url, filename, color):
+async def check_and_announce_logs(url, filename, color, log_source_name):
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -87,7 +84,7 @@ async def check_and_announce_logs(url, filename, color):
             previous_logs_id = f.read()
 
         if logs_id != previous_logs_id:
-            await announce_new_logs(first_log, logs_id, filename, color)
+            await announce_new_logs(first_log, logs_id, filename, color, log_source_name)
         else:
             print(f"Latest logs has already been announced ID: {previous_logs_id}")
 
@@ -95,7 +92,7 @@ async def check_and_announce_logs(url, filename, color):
         print(f"Error occurred: {e}")
 
 
-async def announce_new_logs(log, logs_id, filename, color):
+async def announce_new_logs(log, logs_id, filename, color, log_source_name):
     title = log['title']
     owner = log['owner']
     starttime = log['start']
@@ -106,20 +103,21 @@ async def announce_new_logs(log, logs_id, filename, color):
     endtimeformatted = "<t:" + endtimestring + ":R>"
     link = LOGS_BASE_URL + logs_id
 
-    embed = create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color)
-    await bot.rest.create_message(channel_id_1, embed)
-    await bot.rest.create_message(channel_id_2, embed)
-    await bot.rest.create_message(channel_id_3, embed)
+    embed = create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name)
+
+    for channel_id in config['channel_ids'].values():
+        await bot.rest.create_message(channel_id, embed)
+
     with open(filename, "w") as f:
         f.write(logs_id)
 
 
-def create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color):
+def create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name):
     embed = hikari.Embed(title="New Warcraft Logs has been uploaded", color=color)
     embed.set_thumbnail(THUMBNAIL_URL)
     embed.add_field(name="Title:", value=f'{title}', inline=True)
     embed.add_field(name="Author:", value=f'{owner}', inline=True)
-    embed.add_field(name="‎", value=f'‎', inline=True)
+    embed.add_field(name="Log source:", value=f'{log_source_name}', inline=True)
     embed.add_field(name="Start time:", value=f'{starttimeformatted}', inline=True)
     embed.add_field(name="End time:", value=f'{endtimeformatted}', inline=True)
     embed.add_field(name="‎", value=f'‎', inline=True)
