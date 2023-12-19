@@ -1,8 +1,9 @@
-token.txt
+token.json
 .idea/
-/logsdata.json
-/previouslogsid_loctifas.txt
-/previouslogsid_mightytsuu.txt
-/previouslogsid_pohjoinen.txt
-/previouslogsid_taikaolennot.txt
-/previouslogsid_nave.txt
+/logs/logsdata.json
+/logs/previouslogsid_loctifas.txt
+/logs/previouslogsid_mightytsuu.txt
+/logs/previouslogsid_pohjoinen.txt
+/logs/previouslogsid_taikaolennot.txt
+/logs/previouslogsid_nave.txt
+/logs/

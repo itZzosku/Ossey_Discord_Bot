@@ -14,40 +14,27 @@ import time
 from datetime import datetime, timezone, timedelta
 
 # Constants
-CHANNEL_ID_1 = 718877818137739392
-CHANNEL_ID_2 = 1129184933320069192
-CHANNEL_ID_3 = 1129184479953567884
-
-# Constants for different log colors
-COLOR_MIGHTY = 0x00FF00
-COLOR_LOCTIFAS = 0x432616
-COLOR_POHJOINEN = 0xFF0000
-COLOR_TAIKAOLENNOT = 0x0000FF
-COLOR_NAVE = 0x000000
-
 LOGS_BASE_URL = "https://www.warcraftlogs.com/reports/"
 THUMBNAIL_URL = "https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg"
 
 
-def read_config_file():
-    with open("token.txt", "r") as f:
-        lines = f.readlines()
-        lines = [line.strip() for line in lines]  # Strip whitespace and newlines
-        return lines
+def read_json_file(filename):
+    with open(filename, 'r') as file:
+        return json.load(file)
 
 
-# Read the file once and store the configuration
-config_lines = read_config_file()
+# Read the configuration and tokens
+config = read_json_file('config.json')
+tokens = read_json_file('token.json')
 
-# Assign the configuration to variables
-token = config_lines[0]
-influxdb2_token = config_lines[1]
-warcraftlogsurl_mightytsuu = config_lines[2]
-warcraftlogsurl_loctifas = config_lines[3]
-warcraftlogsurl_pohjoinen = config_lines[4]
-warcraftlogsurl_taikaolennot = config_lines[5]
-warcraftlogsurl_nave = config_lines[6]
+# Assign variables from the JSON files
+token = tokens['token']
+influxdb2_token = tokens['influxdb2_token']
+warcraft_logs_token = tokens['warcraft_logs_token']
 
+channel_id_1 = config['channel_ids']['channel_1']
+channel_id_2 = config['channel_ids']['channel_2']
+channel_id_3 = config['channel_ids']['channel_3']
 
 bot = lightbulb.BotApp(
     token=token,
@@ -65,18 +52,21 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     print("Bot has started!")
 
 
+@bot.listen(hikari.StartedEvent)
+async def on_started(_: hikari.StartedEvent) -> None:
+    for name, source in config['log_sources'].items():
+        formatted_url = f"{source['url']}?api_key={warcraft_logs_token}"  # Append the token to the URL
+        color_int = int(source['color'].lstrip('#'), 16)
+        schedule_log_check(name, formatted_url, f"logs/{source['filename']}", color_int)
+
+
 def schedule_log_check(job_id, url, filename, color):
     bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute="*/1"), args=[url, filename, color],
                         misfire_grace_time=None, id=job_id)
 
 
-@bot.listen(hikari.StartedEvent)
-async def on_started(_: hikari.StartedEvent) -> None:
-    schedule_log_check("Mightytsuu", warcraftlogsurl_mightytsuu, "previouslogsid_mightytsuu.txt", COLOR_MIGHTY)
-    schedule_log_check("Loctifas", warcraftlogsurl_loctifas, "previouslogsid_loctifas.txt", COLOR_LOCTIFAS)
-    schedule_log_check("Pohjoinen", warcraftlogsurl_pohjoinen, "previouslogsid_pohjoinen.txt", COLOR_POHJOINEN)
-    schedule_log_check("Taikaolennot", warcraftlogsurl_taikaolennot, "previouslogsid_taikaolennot.txt", COLOR_TAIKAOLENNOT)
-    schedule_log_check("Nave", warcraftlogsurl_nave, "previouslogsid_nave.txt", COLOR_NAVE)
+def hex_to_int(hex_color):
+    return int(hex_color.lstrip('#'), 16)
 
 
 async def check_and_announce_logs(url, filename, color):
@@ -86,6 +76,8 @@ async def check_and_announce_logs(url, filename, color):
         data = response.content
         first_log = json.loads(data)[0]
         logs_id = first_log['id']
+
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         if not os.path.exists(filename):
             with open(filename, "w") as f:
@@ -115,9 +107,9 @@ async def announce_new_logs(log, logs_id, filename, color):
     link = LOGS_BASE_URL + logs_id
 
     embed = create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color)
-    await bot.rest.create_message(CHANNEL_ID_1, embed)
-    await bot.rest.create_message(CHANNEL_ID_2, embed)
-    await bot.rest.create_message(CHANNEL_ID_3, embed)
+    await bot.rest.create_message(channel_id_1, embed)
+    await bot.rest.create_message(channel_id_2, embed)
+    await bot.rest.create_message(channel_id_3, embed)
     with open(filename, "w") as f:
         f.write(logs_id)
 

@@ -1,0 +1,34 @@
+{
+  "channel_ids": {
+    "channel_1": 718877818137739392,
+    "channel_2": 1129184933320069192,
+    "channel_3": 1129184479953567884
+  },
+  "log_sources": {
+    "Mightytsuu": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/user/Mightytsuu",
+      "color": "#00FF00",
+      "filename": "previouslogsid_mightytsuu.txt"
+    },
+    "Loctifas": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/user/Loctifas",
+      "color": "#432616",
+      "filename": "previouslogsid_loctifas.txt"
+    },
+    "Pohjoinen": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pohjoinen/Kazzak/eu",
+      "color": "#FF0000",
+      "filename": "previouslogsid_pohjoinen.txt"
+    },
+    "Taikaolennot": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Taikaolennot/Outland/eu",
+      "color": "#0000FF",
+      "filename": "previouslogsid_taikaolennot.txt"
+    },
+    "Nave": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Nave/Kazzak/eu",
+      "color": "#000000",
+      "filename": "previouslogsid_nave.txt"
+    }
+  }
+}
