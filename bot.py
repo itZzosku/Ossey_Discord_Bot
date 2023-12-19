@@ -57,7 +57,7 @@ async def on_started(_: hikari.StartedEvent) -> None:
 
 
 def schedule_log_check(job_id, url, filename, color):
-    bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute="*/1"),
+    bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute="*/2"),
                         args=[url, filename, color, job_id],
                         misfire_grace_time=None, id=job_id)
 
