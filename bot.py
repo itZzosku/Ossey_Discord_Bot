@@ -1,3 +1,5 @@
+import os.path
+
 import hikari
 import lightbulb
 from decimal import Decimal
@@ -99,8 +101,13 @@ async def mightytsuulogs() -> None:
     jsondict = json.loads(jsondata)
     first = list(jsondict)[0]
     logsid = (first['id'])
-    f = open("previouslogsid_mightytsuu.txt", "r")
-    previouslogsid = f.read()
+
+    if not os.path.exists("previouslogsid_mightytsuu.txt"):
+        with open("previouslogsid_mightytsuu.txt", "w") as f:
+            f.write("")
+
+    with open("previouslogsid_mightytsuu.txt", "r") as f:
+        previouslogsid = f.read()
 
     if logsid != previouslogsid:
         title = (first['title'])
@@ -150,8 +157,13 @@ async def loctifaslogs() -> None:
     jsondict = json.loads(jsondata)
     first = list(jsondict)[0]
     logsid = (first['id'])
-    f = open("previouslogsid_loctifas.txt", "r")
-    previouslogsid = f.read()
+
+    if not os.path.exists("previouslogsid_loctifas.txt"):
+        with open("previouslogsid_loctifas.txt", "w") as f:
+            f.write("")
+
+    with open("previouslogsid_loctifas.txt", "r") as f:
+        previouslogsid = f.read()
 
     if logsid != previouslogsid:
         title = (first['title'])
@@ -202,8 +214,13 @@ async def pohjoinenlogs() -> None:
     jsondict = json.loads(jsondata)
     first = list(jsondict)[0]
     logsid = (first['id'])
-    f = open("previouslogsid_pohjoinen.txt", "r")
-    previouslogsid = f.read()
+
+    if not os.path.exists("previouslogsid_pohjoinen.txt"):
+        with open("previouslogsid_pohjoinen.txt", "w") as f:
+            f.write("")
+
+    with open("previouslogsid_pohjoinen.txt", "r") as f:
+        previouslogsid = f.read()
 
     if logsid != previouslogsid:
         title = (first['title'])
@@ -256,8 +273,13 @@ async def taikaolennotlogs() -> None:
     jsondict = json.loads(jsondata)
     first = list(jsondict)[0]
     logsid = (first['id'])
-    f = open("previouslogsid_taikaolennot.txt", "r")
-    previouslogsid = f.read()
+
+    if not os.path.exists("previouslogsid_taikaolennot.txt"):
+        with open("previouslogsid_taikaolennot.txt", "w") as f:
+            f.write("")
+
+    with open("previouslogsid_taikaolennot.txt", "r") as f:
+        previouslogsid = f.read()
 
     if logsid != previouslogsid:
         title = (first['title'])
@@ -301,7 +323,6 @@ async def taikaolennotlogs() -> None:
 @lightbulb.implements(lightbulb.SlashCommand)
 async def pong(ctx):
     await ctx.respond("Ping!")
-
 
 
 @bot.command
