@@ -1,39 +1,69 @@
 {
-  "channel_ids": {
-    "channel_1": 718877818137739392,
-    "channel_2": 1129184933320069192,
-    "channel_3": 1129184479953567884
-  },
-  "log_sources": {
-    "Mightytsuu": {
-      "url": "https://www.warcraftlogs.com:443/v1/reports/user/Mightytsuu",
-      "color": "#00FF00",
-      "filename": "previouslogsid_mightytsuu.txt"
+    "channel_ids": {
+        "channel_ayy": 718877818137739392,
+        "channel_loctifas": 1129184933320069192,
+        "channel_mightytsuu": 1129184479953567884
     },
-    "Loctifas": {
-      "url": "https://www.warcraftlogs.com:443/v1/reports/user/Loctifas",
-      "color": "#432616",
-      "filename": "previouslogsid_loctifas.txt"
-    },
-    "Pohjoinen": {
-      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pohjoinen/Kazzak/eu",
-      "color": "#FF0000",
-      "filename": "previouslogsid_pohjoinen.txt"
-    },
-    "Taikaolennot": {
-      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Taikaolennot/Outland/eu",
-      "color": "#0000FF",
-      "filename": "previouslogsid_taikaolennot.txt"
-    },
-    "Nave": {
-      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Nave/Kazzak/eu",
-      "color": "#000000",
-      "filename": "previouslogsid_nave.txt"
-    },
-    "Pescorus": {
-      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pescorus/Kazzak/eu",
-      "color": "#b45ad9",
-      "filename": "previouslogsid_pescorus.txt"
+    "log_sources": {
+        "Mightytsuu": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/user/Mightytsuu",
+            "color": "#00FF00",
+            "filename": "previouslogsid_Mightytsuu.txt",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_loctifas",
+                "channel_ayy"
+            ]
+        },
+        "Loctifas": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/user/Loctifas",
+            "color": "#432616",
+            "filename": "previouslogsid_Loctifas.txt",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_loctifas",
+                "channel_ayy"
+            ]
+        },
+        "Pohjoinen": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pohjoinen/Kazzak/eu",
+            "color": "#FF0000",
+            "filename": "previouslogsid_Pohjoinen.txt",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_loctifas",
+                "channel_ayy"
+            ]
+        },
+        "Taikaolennot": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Taikaolennot/Outland/eu",
+            "color": "#0000FF",
+            "filename": "previouslogsid_Taikaolennot.txt",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_loctifas",
+                "channel_ayy"
+            ]
+        },
+        "Nave": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Nave/Kazzak/eu",
+            "color": "#000000",
+            "filename": "previouslogsid_Nave.txt",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_loctifas",
+                "channel_ayy"
+            ]
+        },
+        "Pescorus": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pescorus/Kazzak/eu",
+            "color": "#b45ad9",
+            "filename": "previouslogsid_Pescorus.txt",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_loctifas",
+                "channel_ayy"
+            ]
+        }
     }
-  }
 }
