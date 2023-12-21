@@ -15,7 +15,7 @@
                 "channel_ayy"
             ]
         },
-        "Loctifas": {
+        "loctifas": {
             "url": "https://www.warcraftlogs.com:443/v1/reports/user/Loctifas",
             "color": "#432616",
             "filename": "previouslogsid_Loctifas.txt",
