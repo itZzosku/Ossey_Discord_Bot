@@ -9,6 +9,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/user/Mightytsuu",
             "color": "#00FF00",
             "filename": "previouslogsid_Mightytsuu.txt",
+            "cron_schedule": "*/1",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
@@ -19,6 +20,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/user/Loctifas",
             "color": "#432616",
             "filename": "previouslogsid_Loctifas.txt",
+            "cron_schedule": "*/1",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
@@ -29,6 +31,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pohjoinen/Kazzak/eu",
             "color": "#FF0000",
             "filename": "previouslogsid_Pohjoinen.txt",
+            "cron_schedule": "*/1",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
@@ -39,6 +42,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Taikaolennot/Outland/eu",
             "color": "#0000FF",
             "filename": "previouslogsid_Taikaolennot.txt",
+            "cron_schedule": "*/5",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
@@ -49,6 +53,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Nave/Kazzak/eu",
             "color": "#000000",
             "filename": "previouslogsid_Nave.txt",
+            "cron_schedule": "*/5",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
@@ -59,6 +64,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pescorus/Kazzak/eu",
             "color": "#b45ad9",
             "filename": "previouslogsid_Pescorus.txt",
+            "cron_schedule": "*/5",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
@@ -69,6 +75,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/IHAN SAMA/Stormreaver/eu",
             "color": "#04173e",
             "filename": "previouslogsid_IHAN SAMA.txt",
+            "cron_schedule": "*/5",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",

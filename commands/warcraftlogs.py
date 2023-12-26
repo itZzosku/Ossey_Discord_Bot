@@ -18,15 +18,17 @@ async def initialize_log_checks(bot):
     warcraft_logs_token = get_warcraft_logs_token()
     config = get_config()
     channel_ids = config['channel_ids']
+
     for name, source in config['log_sources'].items():
         formatted_url = f"{source['url']}?api_key={warcraft_logs_token}"
         color_int = hex_to_int(source['color'])
         channels = [channel_ids[ch] for ch in source['channels']]
-        schedule_log_check(bot, name, formatted_url, f"logs/{source['filename']}", color_int, channels)
+        cron_schedule = source.get('cron_schedule', '*/5')  # Default to every 5 minutes if not specified
+        schedule_log_check(bot, name, formatted_url, f"logs/{source['filename']}", color_int, channels, cron_schedule)
 
 
-def schedule_log_check(bot, job_id, url, filename, color, channels):
-    bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute="*/2"),
+def schedule_log_check(bot, job_id, url, filename, color, channels, cron_schedule):
+    bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute=cron_schedule),
                         args=[url, filename, color, job_id, channels, bot],
                         misfire_grace_time=None, replace_existing=True, id=job_id)
 
