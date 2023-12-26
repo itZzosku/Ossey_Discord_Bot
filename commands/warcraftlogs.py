@@ -84,7 +84,7 @@ async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name,
 
 
 def create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name):
-    embed = hikari.Embed(title=f"New Warcraft Logs has been uploaded by {log_source_name}", color=color)
+    embed = hikari.Embed(title=f"{log_source_name} has uploaded new Warcraft Logs", color=color)
     embed.set_thumbnail(THUMBNAIL_URL)
     embed.add_field(name="Title:", value=f'{title}', inline=True)
     embed.add_field(name="Author:", value=f'{owner}', inline=True)
