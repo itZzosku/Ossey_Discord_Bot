@@ -2,7 +2,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import hikari
 import lightbulb
-import requests
+import aiohttp
 import json
 import os
 import os.path
@@ -41,11 +41,12 @@ def setup_warcraft_logs(bot):
 
 async def check_and_announce_logs(url, filename, color, log_source_name, channels, bot):
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.content
-        first_log = json.loads(data)[0]
-        logs_id = first_log['id']
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                response.raise_for_status()
+                data = await response.json()
+                first_log = data[0]
+                logs_id = first_log['id']
 
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
@@ -61,6 +62,8 @@ async def check_and_announce_logs(url, filename, color, log_source_name, channel
         else:
             print(f"Latest logs has already been announced ID: {previous_logs_id}")
 
+    except aiohttp.ClientError as e:
+        print(f"HTTP request error: {e}")
     except Exception as e:
         print(f"Error occurred: {e}")
 
