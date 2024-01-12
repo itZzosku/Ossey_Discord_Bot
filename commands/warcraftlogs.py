@@ -14,6 +14,13 @@ LOGS_BASE_URL = "https://www.warcraftlogs.com/reports/"
 THUMBNAIL_URL = "https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg"
 
 
+def setup_warcraft_logs(bot):
+    @bot.listen(hikari.StartedEvent)
+    async def on_started(_: hikari.StartedEvent) -> None:
+        await run_checks_once(bot)
+        await initialize_log_checks(bot)
+
+
 async def initialize_log_checks(bot):
     warcraft_logs_token = get_warcraft_logs_token()
     config = get_config()
@@ -33,10 +40,14 @@ def schedule_log_check(bot, job_id, url, filename, color, channels, cron_schedul
                         misfire_grace_time=None, replace_existing=True, id=job_id)
 
 
-def setup_warcraft_logs(bot):
-    @bot.listen(hikari.StartedEvent)
-    async def on_started(_: hikari.StartedEvent) -> None:
-        await initialize_log_checks(bot)
+async def run_checks_once(bot):
+    config = get_config()
+    for name, source in config['log_sources'].items():
+        formatted_url = f"{source['url']}?api_key={get_warcraft_logs_token()}"
+        color_int = hex_to_int(source['color'])
+        channels = [config['channel_ids'][ch] for ch in source['channels']]
+        filename = f"logs/{source['filename']}"
+        await check_and_announce_logs(formatted_url, filename, color_int, name, channels, bot)
 
 
 async def check_and_announce_logs(url, filename, color, log_source_name, channels, bot):
@@ -50,17 +61,22 @@ async def check_and_announce_logs(url, filename, color, log_source_name, channel
 
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        if not os.path.exists(filename):
-            with open(filename, "w") as f:
-                f.write("")
-
-        with open(filename, "r") as f:
-            previous_logs_id = f.read()
-
-        if logs_id != previous_logs_id:
-            await announce_new_logs(bot, first_log, logs_id, filename, color, log_source_name, channels)
+        # Read existing log IDs or initialize an empty list
+        if os.path.exists(filename):
+            with open(filename, "r") as f:
+                previous_logs_ids = f.read().splitlines()
         else:
-            print(f"Latest logs has already been announced ID: {previous_logs_id}")
+            previous_logs_ids = []
+
+        # Check if the new log ID is already in the list of known IDs
+        if logs_id not in previous_logs_ids:
+            await announce_new_logs(bot, first_log, logs_id, filename, color, log_source_name, channels)
+            # Add the new ID to the list and keep only the last 5
+            previous_logs_ids.append(logs_id)
+            with open(filename, "w") as f:
+                f.writelines("\n".join(previous_logs_ids[-5:]))  # Save only the last 5 IDs
+        else:
+            print(f"Latest logs have already been announced ID: {logs_id}")
 
     except aiohttp.ClientError as e:
         print(f"HTTP request error: {e}")
@@ -84,8 +100,17 @@ async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name,
     for channel_id in channels:
         await bot.rest.create_message(channel_id, embed)
 
+    # Read existing log IDs or initialize an empty list
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            previous_logs_ids = f.read().splitlines()
+    else:
+        previous_logs_ids = []
+
+    # Add the new ID to the list and keep only the last 5
+    previous_logs_ids.append(logs_id)
     with open(filename, "w") as f:
-        f.write(logs_id)
+        f.writelines("\n".join(previous_logs_ids[-5:]))  # Save only the last 5 IDs
 
 
 def create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name):
