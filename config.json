@@ -72,7 +72,7 @@
             ]
         },
         "IHAN SAMA": {
-            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/IHAN SAMA/Stormreaver/eu",
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/IHAN%20SAMA/Stormreaver/eu",
             "color": "#04173e",
             "filename": "previouslogsid_IHAN SAMA.txt",
             "cron_schedule": "*/5",
