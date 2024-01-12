@@ -61,20 +61,13 @@ async def check_and_announce_logs(url, filename, color, log_source_name, channel
 
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        # Read existing log IDs or initialize an empty list
+        previous_logs_ids = []
         if os.path.exists(filename):
             with open(filename, "r") as f:
                 previous_logs_ids = f.read().splitlines()
-        else:
-            previous_logs_ids = []
 
-        # Check if the new log ID is already in the list of known IDs
         if logs_id not in previous_logs_ids:
             await announce_new_logs(bot, first_log, logs_id, filename, color, log_source_name, channels)
-            # Add the new ID to the list and keep only the last 5
-            previous_logs_ids.append(logs_id)
-            with open(filename, "w") as f:
-                f.writelines("\n".join(previous_logs_ids[-5:]))  # Save only the last 5 IDs
         else:
             print(f"Latest logs have already been announced ID: {logs_id}")
 
