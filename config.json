@@ -91,7 +91,7 @@
         },
         "Tony Halme Pro Skater": {
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Tony%20Halme%20Pro%20Skater/Kazzak/eu",
-            "color": "#b45ad9",
+            "color": "#520000",
             "filename": "previouslogsid_Tony_Halme_Pro_Skater.txt",
             "cron_schedule": "*/5",
             "channels": [
