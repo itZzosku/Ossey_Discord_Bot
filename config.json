@@ -56,7 +56,6 @@
             "cron_schedule": "*/5",
             "channels": [
                 "channel_mightytsuu",
-                "channel_loctifas",
                 "channel_ayy"
             ]
         },
@@ -74,7 +73,26 @@
         "IHAN SAMA": {
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/IHAN%20SAMA/Stormreaver/eu",
             "color": "#04173e",
-            "filename": "previouslogsid_IHAN SAMA.txt",
+            "filename": "previouslogsid_IHAN_SAMA.txt",
+            "cron_schedule": "*/5",
+            "channels": [
+                "channel_ayy"
+            ]
+        },
+        "Kultzipuppelit": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Kultzipuppelit/Stormreaver/eu",
+            "color": "#bf1148",
+            "filename": "previouslogsid_Kultzipuppelit.txt",
+            "cron_schedule": "*/5",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_ayy"
+            ]
+        },
+        "Tony Halme Pro Skater": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Tony%20Halme%20Pro%20Skater/Kazzak/eu",
+            "color": "#b45ad9",
+            "filename": "previouslogsid_Tony_Halme_Pro_Skater.txt",
             "cron_schedule": "*/5",
             "channels": [
                 "channel_mightytsuu",
