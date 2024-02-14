@@ -1,7 +1,7 @@
 import hikari
 import lightbulb
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from utils import read_json_file, get_discord_token
+from utils import get_discord_token
 
 from commands.telemetry import setup as setup_telemetry
 from commands.rating import setup as setup_rating

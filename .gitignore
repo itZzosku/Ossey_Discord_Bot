@@ -7,3 +7,4 @@ token.json
 /logs/previouslogsid_taikaolennot.txt
 /logs/previouslogsid_nave.txt
 /logs/
+/.env

@@ -1,13 +1,9 @@
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import hikari
-import lightbulb
 import aiohttp
-import json
 import os
 import os.path
-
-from utils import read_json_file, hex_to_int, get_warcraft_logs_token, get_config
+from utils import hex_to_int, get_warcraft_logs_token, get_config
 
 # Constants
 LOGS_BASE_URL = "https://www.warcraftlogs.com/reports/"
