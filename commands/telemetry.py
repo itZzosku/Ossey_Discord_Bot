@@ -13,7 +13,7 @@ def telemetry_command(bot):
     @lightbulb.command("telemetry", "Sends the telemetry of the room")
     @lightbulb.implements(lightbulb.SlashCommand)
     async def telemetry(ctx):
-        client = InfluxDBClient(url="http://192.168.1.22:8087", token=influxdb2_token, org="myorg")
+        client = InfluxDBClient(url="http://10.30.2.3:8087", token=influxdb2_token, org="myorg")
 
         # Get the query API
         query_api = client.query_api()
