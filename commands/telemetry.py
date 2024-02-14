@@ -3,11 +3,12 @@ import lightbulb
 from influxdb_client import InfluxDBClient
 import time
 from datetime import datetime, timezone, timedelta
-from utils import read_json_file, get_influxdb2_token
+from utils import get_influxdb2_token
 
 
 def telemetry_command(bot):
     influxdb2_token = get_influxdb2_token()
+
     @bot.command
     @lightbulb.command("telemetry", "Sends the telemetry of the room")
     @lightbulb.implements(lightbulb.SlashCommand)
@@ -38,7 +39,6 @@ def telemetry_command(bot):
         last_pressure = None
         last_humidity = None
         last_sensor = None
-        timestamp_string = None
 
         # Iterate through the tables
         for table in tables:

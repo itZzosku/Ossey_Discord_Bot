@@ -38,7 +38,6 @@ def manage_channel_command(bot):
         await ctx.respond(response_message)
         print(response_message)  # Debugging output
 
-
     @manage_channel.child
     @lightbulb.option("channel_name", "The name of the channel to remove", type=str, autocomplete=True)
     @lightbulb.command("remove", "Remove a channel")
@@ -63,12 +62,12 @@ def manage_channel_command(bot):
             await ctx.respond(response_message)
             print(response_message)  # Debugging output
 
-
     @remove_channel.autocomplete("channel_name")
     async def remove_channel_autocomplete(
-        opt: hikari.AutocompleteInteractionOption,
-        inter: hikari.AutocompleteInteraction
-    ) -> Union[str, Sequence[str], hikari.api.AutocompleteChoiceBuilder, Sequence[hikari.api.AutocompleteChoiceBuilder]]:
+            opt: hikari.AutocompleteInteractionOption,
+            inter: hikari.AutocompleteInteraction
+    ) -> Union[
+        str, Sequence[str], hikari.api.AutocompleteChoiceBuilder, Sequence[hikari.api.AutocompleteChoiceBuilder]]:
 
         config = read_json_file('config.json')
         channel_ids = config['channel_ids']
@@ -86,4 +85,3 @@ def manage_channel_command(bot):
 
 def setup(bot):
     manage_channel_command(bot)
-
