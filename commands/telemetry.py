@@ -19,16 +19,18 @@ def telemetry_command(bot):
         query_api = client.query_api()
 
         # Define the Flux query
-        # Here, I've replaced v.windowPeriod with a literal duration value '1m' for aggregateWindow function.
         flux_query = '''
             from(bucket: "House Telemetry")
-            |> range(start: -60m)
+            |> range(start: -1h)  // Adjusted to a shorter range for efficiency
             |> filter(fn: (r) => r["_measurement"] == "ESP32")
             |> filter(fn: (r) => r["Name"] == "Telemetry")
-            |> filter(fn: (r) => r["_field"] == "Pressure" or r["_field"] == "Humidity" or r["_field"] == "Sensor" or r["_field"] == "Temperature")
-            |> aggregateWindow(every: 10s, fn: last, createEmpty: false)
+            |> filter(fn: (r) => 
+                r["_field"] == "Pressure" or 
+                r["_field"] == "Humidity" or 
+                r["_field"] == "Sensor" or 
+                r["_field"] == "Temperature")
             |> last()
-            '''
+        '''
 
         # Execute the query
         tables = query_api.query(flux_query)
