@@ -27,6 +27,17 @@
                 "channel_ayy"
             ]
         },
+        "Tuju": {
+            "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Tuju/Kazzak/eu",
+            "color": "#FF0000",
+            "filename": "previouslogsid_Tuju.txt",
+            "cron_schedule": "*/1",
+            "channels": [
+                "channel_mightytsuu",
+                "channel_loctifas",
+                "channel_ayy"
+            ]
+        },
         "Pohjoinen": {
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pohjoinen/Kazzak/eu",
             "color": "#FF0000",
