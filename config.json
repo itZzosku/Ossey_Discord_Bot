@@ -42,7 +42,7 @@
             "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pohjoinen/Kazzak/eu",
             "color": "#FF0000",
             "filename": "previouslogsid_Pohjoinen.txt",
-            "cron_schedule": "*/1",
+            "cron_schedule": "*/5",
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
