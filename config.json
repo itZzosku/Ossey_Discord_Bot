@@ -66,7 +66,6 @@
             "filename": "previouslogsid_Nave.txt",
             "cron_schedule": "*/5",
             "channels": [
-                "channel_mightytsuu",
                 "channel_ayy"
             ]
         },
@@ -76,8 +75,6 @@
             "filename": "previouslogsid_Pescorus.txt",
             "cron_schedule": "*/5",
             "channels": [
-                "channel_mightytsuu",
-                "channel_loctifas",
                 "channel_ayy"
             ]
         },
@@ -96,7 +93,6 @@
             "filename": "previouslogsid_Kultzipuppelit.txt",
             "cron_schedule": "*/5",
             "channels": [
-                "channel_mightytsuu",
                 "channel_ayy"
             ]
         },
