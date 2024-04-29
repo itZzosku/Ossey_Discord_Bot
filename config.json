@@ -1,6 +1,7 @@
 {
     "channel_ids": {
         "channel_ayy": 718877818137739392,
+        "channel_tuju": 1232713697286160457,
         "channel_loctifas": 1129184933320069192,
         "channel_mightytsuu": 1129184479953567884
     },
@@ -35,7 +36,8 @@
             "channels": [
                 "channel_mightytsuu",
                 "channel_loctifas",
-                "channel_ayy"
+                "channel_ayy",
+                "channel_tuju"
             ]
         },
         "Pohjoinen": {
