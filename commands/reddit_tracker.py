@@ -1,6 +1,5 @@
 import os
 import os.path
-import aiohttp
 import hikari
 import asyncpraw
 from apscheduler.triggers.cron import CronTrigger
@@ -25,11 +24,6 @@ reddit = asyncpraw.Reddit(
 
 
 def setup_reddit_tracker(bot):
-    """
-    Called from your main bot file to initialize
-    scheduling logic for Reddit tracking.
-    """
-
     @bot.listen(hikari.StartedEvent)
     async def on_started(_: hikari.StartedEvent) -> None:
         # (A) Run an immediate check once
@@ -39,9 +33,6 @@ def setup_reddit_tracker(bot):
 
 
 async def initialize_reddit_checks(bot):
-    """
-    Schedules the recurring checks for each 'reddit_source' from config.json
-    """
     config = get_config()
     reddit_sources = config.get("reddit_sources", {})
     channel_ids = config.get("channel_ids", {})
@@ -65,9 +56,6 @@ async def initialize_reddit_checks(bot):
 
 
 async def run_initial_check(bot):
-    """
-    Runs one immediate check for each user on bot startup
-    """
     config = get_config()
     reddit_sources = config.get("reddit_sources", {})
     channel_ids = config.get("channel_ids", {})
@@ -82,10 +70,6 @@ async def run_initial_check(bot):
 
 
 async def check_and_announce_reddit(bot, username, base_filename, color, channels):
-    """
-    Fetch *all* posts & comments for 'username' using asyncpraw,
-    then announce any new ones in the given channels.
-    """
     # 1) Submissions
     new_submissions = await fetch_all_submissions(username)
     if new_submissions:
@@ -103,9 +87,6 @@ async def check_and_announce_reddit(bot, username, base_filename, color, channel
 
 
 async def fetch_all_submissions(username: str):
-    """
-    Fetch *ALL* submissions for the given user (asyncpraw, no limit).
-    """
     results = []
     try:
         # The key fix: use `await` here
@@ -206,9 +187,9 @@ def create_submission_embed(submission, color):
         description=submission.title,
         color=color
     )
-    embed.add_field("Created", relative_time, inline=False)
     embed.add_field("Submission URL", submission.url, inline=False)
     embed.add_field("Reddit Link", f"https://reddit.com{submission.permalink}", inline=False)
+    embed.add_field("Posted", relative_time, inline=False)
     return embed
 
 
