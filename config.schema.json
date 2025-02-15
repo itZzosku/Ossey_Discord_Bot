@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configuration Schema",
+  "description": "Schema for a configuration with channel_ids, log_sources, and reddit_sources.",
+  "type": "object",
+  "properties": {
+    "channel_ids": {
+      "type": "object",
+      "description": "Mapping of custom channel names to numeric IDs.",
+      "patternProperties": {
+        "^[a-zA-Z0-9_]+$": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "log_sources": {
+      "type": "object",
+      "description": "Configurations for various log sources.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[A-Fa-f0-9]{6}$"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "cron_schedule": {
+            "type": "string"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["url", "color", "filename", "cron_schedule", "channels"],
+        "additionalProperties": false
+      }
+    },
+    "reddit_sources": {
+      "type": "object",
+      "description": "Configurations for various Reddit sources.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[A-Fa-f0-9]{6}$"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "cron_schedule": {
+            "type": "string"
+          }
+        },
+        "required": ["username", "channels", "color", "filename", "cron_schedule"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["channel_ids", "log_sources", "reddit_sources"],
+  "additionalProperties": false
+}

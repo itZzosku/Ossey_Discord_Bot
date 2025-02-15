@@ -114,7 +114,9 @@
   "reddit_sources": {
     "itZzosku": {
       "username": "deacine",
-      "channels": ["channel_fluidy"],
+      "channels": [
+        "channel_fluidy"
+      ],
       "color": "#FFFFFF",
       "filename": "reddit/deacine.txt",
       "cron_schedule": "*/1"
