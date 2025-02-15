@@ -26,9 +26,7 @@ reddit = asyncpraw.Reddit(
 def setup_reddit_tracker(bot):
     @bot.listen(hikari.StartedEvent)
     async def on_started(_: hikari.StartedEvent) -> None:
-        # (A) Run an immediate check once
         await run_initial_check(bot)
-        # (B) Schedule recurring checks
         await initialize_reddit_checks(bot)
 
 
