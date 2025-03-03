@@ -99,6 +99,16 @@
         "channel_ayy"
       ]
     },
+    "Karanteeni": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/karanteeni/ravencrest/eu",
+      "color": "#bf1148",
+      "filename": "previouslogsid_Karanteeni.txt",
+      "cron_schedule": "*/5",
+      "channels": [
+        "channel_mightytsuu",
+        "channel_ayy"
+      ]
+    },
     "Tony Halme Pro Skater": {
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Tony%20Halme%20Pro%20Skater/Stormreaver/eu",
       "color": "#520000",
