@@ -87,7 +87,8 @@
       "filename": "previouslogsid_IHAN_SAMA.txt",
       "cron_schedule": "*/5",
       "channels": [
-        "channel_ayy"
+        "channel_ayy",
+        "channel_mightytsuu"
       ]
     },
     "Kultzipuppelit": {
