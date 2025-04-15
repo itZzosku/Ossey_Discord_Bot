@@ -91,6 +91,26 @@
         "channel_mightytsuu"
       ]
     },
+    "IHAN SAMA CE-tiimi": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/CE-tiimi/Stormreaver/eu",
+      "color": "#04173e",
+      "filename": "previouslogsid_IHAN_SAMA_CE.txt",
+      "cron_schedule": "*/5",
+      "channels": [
+        "channel_ayy",
+        "channel_mightytsuu"
+      ]
+    },
+    "IHAN SAMA PH-tiimi": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/PH-tiimi/Stormreaver/eu",
+      "color": "#04173e",
+      "filename": "previouslogsid_IHAN_SAMA_PH.txt",
+      "cron_schedule": "*/5",
+      "channels": [
+        "channel_ayy",
+        "channel_mightytsuu"
+      ]
+    },
     "Kultzipuppelit": {
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Kultzipuppelit/Stormreaver/eu",
       "color": "#bf1148",
