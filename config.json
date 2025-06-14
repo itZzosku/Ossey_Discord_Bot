@@ -1,6 +1,7 @@
 {
   "channel_ids": {
     "channel_ayy": 718877818137739392,
+    "channel_ayy_top20": 1383453772776214558,
     "channel_tuju": 1232713697286160457,
     "channel_loctifas": 1129184933320069192,
     "channel_mightytsuu": 1129184479953567884,
@@ -11,7 +12,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/user/Mightytsuu",
       "color": "#00FF00",
       "filename": "previouslogsid_Mightytsuu.txt",
-      "cron_schedule": "*/1",
+      "cron_schedule": "*/1 * * * *",
       "channels": [
         "channel_mightytsuu",
         "channel_loctifas",
@@ -22,7 +23,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/user/Loctifas",
       "color": "#432616",
       "filename": "previouslogsid_Loctifas.txt",
-      "cron_schedule": "*/1",
+      "cron_schedule": "*/1 * * * *",
       "channels": [
         "channel_mightytsuu",
         "channel_loctifas",
@@ -33,7 +34,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Tuju/Kazzak/eu",
       "color": "#FF0000",
       "filename": "previouslogsid_Tuju.txt",
-      "cron_schedule": "*/1",
+      "cron_schedule": "*/1 * * * *",
       "channels": [
         "channel_mightytsuu",
         "channel_loctifas",
@@ -45,7 +46,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pohjoinen/Kazzak/eu",
       "color": "#FF0000",
       "filename": "previouslogsid_Pohjoinen.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_mightytsuu",
         "channel_loctifas",
@@ -56,7 +57,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Taikaolennot/Outland/eu",
       "color": "#0000FF",
       "filename": "previouslogsid_Taikaolennot.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_mightytsuu",
         "channel_loctifas",
@@ -67,7 +68,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Nave/Kazzak/eu",
       "color": "#000000",
       "filename": "previouslogsid_Nave.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_ayy"
       ]
@@ -76,7 +77,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Pescorus/Kazzak/eu",
       "color": "#b45ad9",
       "filename": "previouslogsid_Pescorus.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_ayy"
       ]
@@ -85,7 +86,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/IHAN%20SAMA/Stormreaver/eu",
       "color": "#04173e",
       "filename": "previouslogsid_IHAN_SAMA.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_ayy",
         "channel_mightytsuu"
@@ -95,7 +96,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/CE-tiimi/Stormreaver/eu",
       "color": "#04173e",
       "filename": "previouslogsid_IHAN_SAMA_CE.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_ayy",
         "channel_mightytsuu"
@@ -105,7 +106,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/PH-tiimi/Stormreaver/eu",
       "color": "#04173e",
       "filename": "previouslogsid_IHAN_SAMA_PH.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_ayy",
         "channel_mightytsuu"
@@ -115,7 +116,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Kultzipuppelit/Stormreaver/eu",
       "color": "#bf1148",
       "filename": "previouslogsid_Kultzipuppelit.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_ayy"
       ]
@@ -124,7 +125,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/karanteeni/ravencrest/eu",
       "color": "#bf1148",
       "filename": "previouslogsid_Karanteeni.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_mightytsuu",
         "channel_ayy"
@@ -134,7 +135,7 @@
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/Tony%20Halme%20Pro%20Skater/Stormreaver/eu",
       "color": "#520000",
       "filename": "previouslogsid_Tony_Halme_Pro_Skater.txt",
-      "cron_schedule": "*/5",
+      "cron_schedule": "*/5 * * * *",
       "channels": [
         "channel_mightytsuu",
         "channel_loctifas",
@@ -150,7 +151,34 @@
       ],
       "color": "#FFFFFF",
       "filename": "reddit/deacine.txt",
-      "cron_schedule": "*/1"
+      "cron_schedule": "*/1 * * * *"
     }
+  },
+    "guild_rank_group": {
+    "guilds": [
+      { "name": "Tuju", "region": "eu", "realm": "Kazzak" },
+      { "name": "Slack", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Muisted", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Forbidden", "region": "eu", "realm": "Vashj" },
+      { "name": "Noni", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Turbo Saab", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Kultzipuppelit", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Kilta", "region": "eu", "realm": "ravencrest" },
+      { "name": "IHAN SAMA", "region": "eu", "realm": "Stormreaver" },
+      { "name": "LkaksP Issue", "region": "eu", "realm": "Stormreaver" },
+      { "name": "käsipainoilla bodaus", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Beyond Harmless", "region": "eu", "realm": "Sylvanas" },
+      { "name": "Hakkapeliitta", "region": "eu", "realm": "Darkspear" },
+      { "name": "TURTLES KIMBLE", "region": "eu", "realm": "Tarren Mill" },
+      { "name": "Sisu", "region": "eu", "realm": "Draenor" },
+      { "name": "Intervention", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Taikaolennot", "region": "eu", "realm": "Outland" },
+      { "name": "Tony Halme Pro Skater", "region": "eu", "realm": "Stormreaver" }
+    ],
+    "cron_schedule": "*/1 * * * *",
+    "raid_slug": "liberation-of-undermine",
+    "filename": "guild_ranks_grouped.json",
+    "message_filename": "guild_rank_message.json",
+    "channel_key": ["channel_ayy_top20"]
   }
 }
