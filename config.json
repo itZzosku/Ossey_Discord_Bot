@@ -175,7 +175,7 @@
       { "name": "Taikaolennot", "region": "eu", "realm": "Outland" },
       { "name": "Tony Halme Pro Skater", "region": "eu", "realm": "Stormreaver" }
     ],
-    "cron_schedule": "*/1 * * * *",
+    "cron_schedule": "*/5 * * * *",
     "raid_slug": "liberation-of-undermine",
     "filename": "guild_ranks_grouped.json",
     "message_filename": "guild_rank_message.json",
