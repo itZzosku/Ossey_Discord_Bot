@@ -29,4 +29,4 @@ def hex_to_int(hex_color: str) -> int:
 
 
 def get_config():
-    return read_json_file('config.json')
+    return read_json_file('bot/config.json')

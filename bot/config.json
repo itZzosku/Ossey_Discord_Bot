@@ -152,5 +152,30 @@
       "filename": "reddit/deacine.txt",
       "cron_schedule": "*/1"
     }
+  },
+  "guild_rank_group": {
+    "cron_schedule": "*/5 * * * *",
+    "channel_key": "channel_ayy",
+    "filename": "guild_ranks.json",
+    "message_filename": "guild_ranks_msg.json",
+    "guilds": [
+      { "name": "Tuju", "region": "eu", "realm": "Kazzak" },
+      { "name": "Tony Halme Pro Skater", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Pohjoinen", "region": "eu", "realm": "Kazzak" },
+      { "name": "IHAN SAMA", "region": "eu", "realm": "Stormreaver" },
+      { "name": "IHAN SAMA CE-tiimi", "region": "eu", "realm": "Stormreaver" },
+      { "name": "IHAN SAMA PH-tiimi", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Kultzipuppelit", "region": "eu", "realm": "Stormreaver" },
+      { "name": "Karanteeni", "region": "eu", "realm": "Ravencrest" },
+      { "name": "Pescorus", "region": "eu", "realm": "Kazzak" },
+      { "name": "Nave", "region": "eu", "realm": "Kazzak" },
+      { "name": "Taikaolennot", "region": "eu", "realm": "Outland" },
+      { "name": "DND", "region": "eu", "realm": "Tarren Mill" },
+      { "name": "Echo", "region": "eu", "realm": "Tarren Mill" },
+      { "name": "Method", "region": "eu", "realm": "Twisting Nether" },
+      { "name": "BDG", "region": "us", "realm": "Illidan" },
+      { "name": "Instant Dollars", "region": "us", "realm": "Mal'Ganis" },
+      { "name": "Zero Empathy", "region": "us", "realm": "Illidan" }
+    ]
   }
 }

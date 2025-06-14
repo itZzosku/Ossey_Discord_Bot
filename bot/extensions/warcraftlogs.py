@@ -1,20 +1,21 @@
+import lightbulb
 from apscheduler.triggers.cron import CronTrigger
 import hikari
 import aiohttp
 import os
 import os.path
-from utils import hex_to_int, get_warcraft_logs_token, get_config
+from bot.utils import hex_to_int, get_warcraft_logs_token, get_config
 
-# Constants
 LOGS_BASE_URL = "https://www.warcraftlogs.com/reports/"
 THUMBNAIL_URL = "https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg"
 
+loader = lightbulb.Loader()
 
-def setup_warcraft_logs(bot):
-    @bot.listen(hikari.StartedEvent)
-    async def on_started(_: hikari.StartedEvent) -> None:
-        await run_checks_once(bot)
-        await initialize_log_checks(bot)
+
+@loader.listener(hikari.StartedEvent)
+async def on_started(event: hikari.StartedEvent) -> None:
+    await run_checks_once(event.app)
+    await initialize_log_checks(event.app)
 
 
 async def initialize_log_checks(bot):
@@ -26,7 +27,7 @@ async def initialize_log_checks(bot):
         formatted_url = f"{source['url']}?api_key={warcraft_logs_token}"
         color_int = hex_to_int(source['color'])
         channels = [channel_ids[ch] for ch in source['channels']]
-        cron_schedule = source.get('cron_schedule', '*/5')  # Default to every 5 minutes if not specified
+        cron_schedule = source.get('cron_schedule', '*/5')
         schedule_log_check(bot, name, formatted_url, f"logs/{source['filename']}", color_int, channels, cron_schedule)
 
 
@@ -65,7 +66,7 @@ async def check_and_announce_logs(url, filename, color, log_source_name, channel
         if logs_id not in previous_logs_ids:
             await announce_new_logs(bot, first_log, logs_id, filename, color, log_source_name, channels)
         else:
-            print(f"Latest logs have already been announced ID: {logs_id}")
+            print(f"Latest logs already announced: ID {logs_id}")
 
     except aiohttp.ClientError as e:
         print(f"HTTP request error: {e}")
@@ -77,11 +78,11 @@ async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name,
     title = log['title']
     owner = log['owner']
     starttime = log['start']
-    startimestring = str(starttime)[:-3]
-    starttimeformatted = "<t:" + startimestring + ":R>"
+    starttimestring = str(starttime)[:-3]
+    starttimeformatted = f"<t:{starttimestring}:R>"
     endtime = log['end']
     endtimestring = str(endtime)[:-3]
-    endtimeformatted = "<t:" + endtimestring + ":R>"
+    endtimeformatted = f"<t:{endtimestring}:R>"
     link = LOGS_BASE_URL + logs_id
 
     embed = create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name)
@@ -89,27 +90,29 @@ async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name,
     for channel_id in channels:
         await bot.rest.create_message(channel_id, embed)
 
-    # Read existing log IDs or initialize an empty list
+    # Save log ID
     if os.path.exists(filename):
         with open(filename, "r") as f:
             previous_logs_ids = f.read().splitlines()
     else:
         previous_logs_ids = []
 
-    # Add the new ID to the list and keep only the last 5
     previous_logs_ids.append(logs_id)
     with open(filename, "w") as f:
-        f.writelines("\n".join(previous_logs_ids[-5:]))  # Save only the last 5 IDs
+        f.writelines("\n".join(previous_logs_ids[-5:]))
 
 
 def create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name):
-    embed = hikari.Embed(title=f"{log_source_name} has uploaded new Warcraft Logs", color=color)
+    embed = hikari.Embed(
+        title=f"{log_source_name} has uploaded new Warcraft Logs",
+        color=color
+    )
     embed.set_thumbnail(THUMBNAIL_URL)
-    embed.add_field(name="Title:", value=f'{title}', inline=True)
-    embed.add_field(name="Author:", value=f'{owner}', inline=True)
-    embed.add_field(name="Log source:", value=f'{log_source_name}', inline=True)
-    embed.add_field(name="Start time:", value=f'{starttimeformatted}', inline=True)
-    embed.add_field(name="End time:", value=f'{endtimeformatted}', inline=True)
-    embed.add_field(name="‎", value=f'‎', inline=True)
-    embed.add_field(name="Link:", value=f'{link}', inline=False)
+    embed.add_field(name="Title:", value=title, inline=True)
+    embed.add_field(name="Author:", value=owner, inline=True)
+    embed.add_field(name="Log source:", value=log_source_name, inline=True)
+    embed.add_field(name="Start time:", value=starttimeformatted, inline=True)
+    embed.add_field(name="End time:", value=endtimeformatted, inline=True)
+    embed.add_field(name="‎", value="‎", inline=True)
+    embed.add_field(name="Link:", value=link, inline=False)
     return embed
