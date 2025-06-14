@@ -6,7 +6,7 @@ import json
 import asyncio
 from utils import get_config
 from datetime import datetime, timezone
-from urllib.parse import quote
+from urllib.parse import quote, quote_plus
 
 DEFAULT_RAID_SLUG = "liberation-of-undermine"
 
@@ -29,7 +29,7 @@ def setup_guild_rank_tracker(bot):
     bot.d.sched.add_job(
         check_all_guild_ranks,
         trigger,
-        args=[bot, info],
+        args=[bot, info, info.get("raid_slug", "liberation-of-undermine")],
         id="guild_rank_tracker",
         replace_existing=True,
     )
@@ -41,16 +41,12 @@ async def fetch_guild_rank(region, realm, name, raid_slug):
     if not token:
         print("Warning: RAIDERIO_TOKEN not set in environment.")
 
-    try:
-        name_fixed = name.encode("latin1").decode("utf-8")
-    except UnicodeEncodeError:
-        name_fixed = name
-
     region_enc = quote(region.lower())
     realm_enc = quote(realm.lower())
-    name_enc = quote(name_fixed)
+    name_enc = quote_plus(name)  # encode name correctly ONCE
 
-    print(f"Fetching {raid_slug.replace('-', ' ').title()} rank for {name_fixed} in {region}/{realm}...")
+    print(f"Fetching {raid_slug.replace('-', ' ').title()} rank for {name} in {region}/{realm}...")
+    print(f"Fetching URL: https://raider.io/api/v1/guilds/profile?access_key={token}&region={region_enc}&realm={realm_enc}&name={name_enc}&fields=raid_progression,raid_rankings")
 
     url = (
         f"https://raider.io/api/v1/guilds/profile?"
@@ -64,14 +60,14 @@ async def fetch_guild_rank(region, realm, name, raid_slug):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status != 200:
-                print(f"Failed to fetch data for {name_fixed}, status code: {response.status}")
+                print(f"Failed to fetch data for {name}, status code: {response.status}")
                 return None
             data = await response.json()
 
             raid_prog = data.get('raid_progression', {})
             raid_data = raid_prog.get(raid_slug)
             if not raid_data:
-                print(f"No {raid_slug} data for {name_fixed}")
+                print(f"No {raid_slug} data for {name}")
                 return {"world_rank": "N/A", "summary": "N/A"}
 
             summary = raid_data.get('summary', 'N/A')
@@ -84,7 +80,7 @@ async def fetch_guild_rank(region, realm, name, raid_slug):
             return {"world_rank": str(world_rank) if world_rank != "N/A" else "N/A", "summary": summary}
 
 
-async def check_all_guild_ranks(bot, info):
+async def check_all_guild_ranks(bot, info, raid_slug):
     print("Starting guild ranks check...")
     guilds = info["guilds"]
     ranks_file = info["filename"]
@@ -175,10 +171,7 @@ async def check_all_guild_ranks(bot, info):
         if count >= max_fields:
             break
 
-        try:
-            display_name = g['name'].encode("latin1").decode("utf-8")
-        except (UnicodeEncodeError, UnicodeDecodeError):
-            display_name = g['name']
+        display_name = g['name']
 
         rank_str = f"#{g['rank_str']}" if g['rank_str'] != "N/A" else "N/A"
         summary = g.get("summary", "N/A")

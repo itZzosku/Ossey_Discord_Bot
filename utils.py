@@ -29,4 +29,6 @@ def hex_to_int(hex_color: str) -> int:
 
 
 def get_config():
-    return read_json_file('config.json')
+    with open("config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+    return config
