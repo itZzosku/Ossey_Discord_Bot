@@ -31,7 +31,7 @@ async def initialize_log_checks(bot):
 
 
 def schedule_log_check(bot, job_id, url, filename, color, channels, cron_schedule):
-    bot.d.sched.add_job(check_and_announce_logs, CronTrigger(minute=cron_schedule),
+    bot.d.sched.add_job(check_and_announce_logs, CronTrigger.from_crontab(cron_schedule),
                         args=[url, filename, color, job_id, channels, bot],
                         misfire_grace_time=None, replace_existing=True, id=job_id)
 
