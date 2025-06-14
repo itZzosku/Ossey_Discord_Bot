@@ -1,5 +1,4 @@
 import os
-import os.path
 import hikari
 import asyncpraw
 from apscheduler.triggers.cron import CronTrigger
@@ -16,16 +15,25 @@ REDDIT_USER_AGENT = os.getenv(
     "script:reddit_to_discord:v1.0 (by /u/YOUR_USERNAME)"
 )
 
-reddit = asyncpraw.Reddit(
-    client_id=REDDIT_CLIENT_ID,
-    client_secret=REDDIT_CLIENT_SECRET,
-    user_agent=REDDIT_USER_AGENT
-)
+reddit = None  # Will hold asyncpraw.Reddit instance
+
+
+def setup_reddit():
+    global reddit
+    reddit = asyncpraw.Reddit(
+        client_id=REDDIT_CLIENT_ID,
+        client_secret=REDDIT_CLIENT_SECRET,
+        user_agent=REDDIT_USER_AGENT
+    )
 
 
 def setup_reddit_tracker(bot):
     @bot.listen(hikari.StartedEvent)
-    async def on_started(_: hikari.StartedEvent) -> None:
+    async def on_started(event: hikari.StartedEvent) -> None:
+        # Initialize Reddit instance synchronously before first use
+        setup_reddit()
+
+        # Run your initial checks and setup scheduled jobs
         await run_initial_check(bot)
         await initialize_reddit_checks(bot)
 
@@ -45,7 +53,7 @@ async def initialize_reddit_checks(bot):
 
         bot.d.sched.add_job(
             check_and_announce_reddit,
-            CronTrigger(minute=cron_schedule),
+            CronTrigger.from_crontab(cron_schedule),
             args=[bot, username, filename, color_int, channels],
             misfire_grace_time=None,
             replace_existing=True,
@@ -87,8 +95,7 @@ async def check_and_announce_reddit(bot, username, base_filename, color, channel
 async def fetch_all_submissions(username: str):
     results = []
     try:
-        # The key fix: use `await` here
-        redditor = await reddit.redditor(username)
+        redditor = await reddit.redditor(username)  # Await here!
         async for submission in redditor.submissions.new(limit=None):
             results.append(submission)
     except Exception as ex:
@@ -97,12 +104,9 @@ async def fetch_all_submissions(username: str):
 
 
 async def fetch_all_comments(username: str):
-    """
-    Fetch *ALL* comments for the given user (asyncpraw, no limit).
-    """
     results = []
     try:
-        redditor = await reddit.redditor(username)
+        redditor = await reddit.redditor(username)  # Await here!
         async for comment in redditor.comments.new(limit=None):
             results.append(comment)
     except Exception as ex:
@@ -111,23 +115,19 @@ async def fetch_all_comments(username: str):
 
 
 async def announce_submissions(bot, username, filename, color, channels, submissions):
-    # Ensure directory
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-    # Load previously seen IDs
     seen_ids = set()
     if os.path.exists(filename):
         with open(filename, "r") as f:
             seen_ids = set(line.strip() for line in f)
 
-    # Filter out ones we've seen
     unannounced = [s for s in submissions if s.id not in seen_ids]
 
     if not unannounced:
         print(f"[Reddit] All submissions by u/{username} already announced.")
         return
 
-    # Sort so oldest is first, newest is last
     unannounced.sort(key=lambda s: s.created_utc)
     print(f"[Reddit] Found {len(unannounced)} new submissions by u/{username}.")
 
@@ -137,7 +137,6 @@ async def announce_submissions(bot, username, filename, color, channels, submiss
             await bot.rest.create_message(cid, embed=embed)
         seen_ids.add(submission.id)
 
-    # Save *all* IDs (no trimming)
     with open(filename, "w") as f:
         f.write("\n".join(seen_ids))
 
@@ -145,16 +144,13 @@ async def announce_submissions(bot, username, filename, color, channels, submiss
 
 
 async def announce_comments(bot, username, filename, color, channels, comments):
-    # Ensure directory
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-    # Load previously seen IDs
     seen_ids = set()
     if os.path.exists(filename):
         with open(filename, "r") as f:
             seen_ids = set(line.strip() for line in f)
 
-    # Filter out ones we've already announced
     unannounced = [c for c in comments if c.id not in seen_ids]
 
     if not unannounced:
