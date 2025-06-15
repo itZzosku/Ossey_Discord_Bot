@@ -151,7 +151,7 @@
       ],
       "color": "#FFFFFF",
       "filename": "reddit/deacine.txt",
-      "cron_schedule": "*/1 * * * *"
+      "cron_schedule": "*/5 * * * *"
     }
   },
     "guild_rank_group": {
