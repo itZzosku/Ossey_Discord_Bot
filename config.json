@@ -5,7 +5,8 @@
     "channel_tuju": 1232713697286160457,
     "channel_loctifas": 1129184933320069192,
     "channel_mightytsuu": 1129184479953567884,
-    "channel_fluidy": 1333559135135862868
+    "channel_fluidy": 1333559135135862868,
+    "channel_fluidy_top20": 1383888050576425001
   },
   "log_sources": {
     "Mightytsuu": {
@@ -180,6 +181,6 @@
     "raid_slug": "liberation-of-undermine",
     "filename": "guild_ranks_grouped.json",
     "message_filename": "guild_rank_message.json",
-    "channel_key": ["channel_ayy_top20"]
+    "channel_key": ["channel_ayy_top20", "channel_fluidy_top20"]
   }
 }
