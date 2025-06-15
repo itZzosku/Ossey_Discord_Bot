@@ -168,7 +168,7 @@ async def check_all_guild_ranks(bot, info, raid_slug):
         color=0x0070FF,
     )
 
-    max_fields = 25
+    max_fields = 24
     count = 0
     for g in guilds_with_ranks:
         if count >= max_fields:
