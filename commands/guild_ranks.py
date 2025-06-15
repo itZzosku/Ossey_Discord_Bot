@@ -44,8 +44,8 @@ async def fetch_guild_rank(region, realm, name, raid_slug):
     if not token:
         print("Warning: RAIDERIO_TOKEN not set in environment.")
 
-    region_enc = quote(region.lower())
-    realm_enc = quote(realm.lower())
+    region_enc = quote(region)
+    realm_enc = quote(realm)
     name_enc = quote_plus(name)  # encode name correctly ONCE
 
     print(f"Fetching {raid_slug.replace('-', ' ').title()} rank for {name} in {region}/{realm}...")
