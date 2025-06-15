@@ -12,28 +12,31 @@ DEFAULT_RAID_SLUG = "liberation-of-undermine"
 
 
 def setup_guild_rank_tracker(bot):
+    @bot.listen(hikari.StartedEvent)
+    async def on_started(_: hikari.StartedEvent) -> None:
+        await run_guild_rank_check_once(bot)
+        schedule_guild_rank_job(bot)
+
+
+def schedule_guild_rank_job(bot):
     config = get_config()
-    info = config.get("guild_rank_group")
-    if not info:
-        print("No guild_rank_group config found.")
-        return
+    info = config.get("guild_rank_group", {})
 
-    cron_schedule = info.get("cron_schedule", "*/5 * * * *")
-    try:
-        trigger = CronTrigger.from_crontab(cron_schedule)
-        print(f"Guild rank tracker scheduled with cron: '{cron_schedule}'")
-    except ValueError:
-        print(f"Invalid cron_schedule '{cron_schedule}', using default '*/5 * * * *'")
-        trigger = CronTrigger.from_crontab("*/5 * * * *")
-
+    cron_schedule = info.get("cron_schedule", "*/15 * * * *")  # Every 15 minutes by default
     bot.d.sched.add_job(
         check_all_guild_ranks,
-        trigger,
-        args=[bot, info, info.get("raid_slug", "liberation-of-undermine")],
-        id="guild_rank_tracker",
+        CronTrigger.from_crontab(cron_schedule),
+        args=[bot, info, info.get("raid_slug", DEFAULT_RAID_SLUG)],
+        id="guild_rank_check",
         replace_existing=True,
     )
-    print("Guild rank tracker job added to scheduler")
+    print(f"Guild rank tracker scheduled with cron: '{cron_schedule}'")
+
+
+async def run_guild_rank_check_once(bot):
+    config = get_config()
+    info = config.get("guild_rank_group", {})
+    await check_all_guild_ranks(bot, info, info.get("raid_slug", DEFAULT_RAID_SLUG))
 
 
 async def fetch_guild_rank(region, realm, name, raid_slug):
