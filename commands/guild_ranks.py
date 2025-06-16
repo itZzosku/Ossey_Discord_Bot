@@ -10,6 +10,8 @@ from urllib.parse import quote, quote_plus
 
 DEFAULT_RAID_SLUG = "liberation-of-undermine"
 
+THUMBNAIL_URL = "https://cdn.raiderio.net/images/brand/Icon_2ColorWhite.png"
+
 
 def setup_guild_rank_tracker(bot):
     @bot.listen(hikari.StartedEvent)
@@ -166,7 +168,9 @@ async def check_all_guild_ranks(bot, info, raid_slug):
     embed = hikari.Embed(
         title=f"Guild World Ranks   -   {raid_slug.replace('-', ' ').title()}",
         color=0x0070FF,
+
     )
+    embed.set_thumbnail(THUMBNAIL_URL)
 
     max_fields = 24
     count = 0
