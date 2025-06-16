@@ -181,7 +181,7 @@ async def check_all_guild_ranks(bot, info, raid_slug):
         profile_url = f"https://raider.io/guilds/{g['region'].lower()}/{quote(g['realm'].lower())}/{quote(g['name'])}"
 
         field_name = f"{display_name}   -    World Rank {rank_str}"
-        field_value = f"Progress: {summary}   -   [Profile Link]({profile_url})"
+        field_value = f"Progress: {summary}   -   [Raider.IO Link]({profile_url})"
 
         embed.add_field(name=field_name, value=field_value, inline=False)
         count += 1
