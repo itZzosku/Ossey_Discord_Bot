@@ -164,7 +164,7 @@ async def check_all_guild_ranks(bot, info, raid_slug):
     unix_ts = int(now.timestamp())
 
     embed = hikari.Embed(
-        title=f"Guild World Ranks - {raid_slug.replace('-', ' ').title()}",
+        title=f"Guild World Ranks   -   {raid_slug.replace('-', ' ').title()}",
         color=0x0070FF,
     )
 
