@@ -133,7 +133,7 @@ async def check_all_guild_ranks(bot, info, raid_slug):
         prev_summary = previous_data.get("summary", "N/A")
 
         if rank != prev_rank or summary != prev_summary:
-            print(f"Update for {g['name']}: {prev_rank} -> {rank} or {prev_summary} -> {summary}")
+            print(f"Update for {g['name']}: {prev_rank} -> {rank} and {prev_summary} -> {summary}")
             previous_ranks[key] = {"world_rank": rank, "summary": summary}
             updated = True
 
