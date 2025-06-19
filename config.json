@@ -122,6 +122,16 @@
         "channel_ayy"
       ]
     },
+    "LkaksP Issue": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/LkaksP%20Issue/Stormreaver/eu",
+      "color": "#bf1148",
+      "filename": "previouslogsid_LkaksP_Issue.txt",
+      "cron_schedule": "*/5 * * * *",
+      "channels": [
+        "channel_mightytsuu",
+        "channel_ayy"
+      ]
+    },
     "Karanteeni": {
       "url": "https://www.warcraftlogs.com:443/v1/reports/guild/karanteeni/ravencrest/eu",
       "color": "#bf1148",
