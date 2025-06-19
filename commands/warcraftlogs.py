@@ -4,6 +4,7 @@ import aiohttp
 import os
 import os.path
 from utils import hex_to_int, get_warcraft_logs_token, get_config
+import asyncio
 
 # Constants
 LOGS_BASE_URL = "https://www.warcraftlogs.com/reports/"
@@ -38,12 +39,17 @@ def schedule_log_check(bot, job_id, url, filename, color, channels, cron_schedul
 
 async def run_checks_once(bot):
     config = get_config()
-    for name, source in config['log_sources'].items():
-        formatted_url = f"{source['url']}?api_key={get_warcraft_logs_token()}"
-        color_int = hex_to_int(source['color'])
-        channels = [config['channel_ids'][ch] for ch in source['channels']]
-        filename = f"logs/{source['filename']}"
-        await check_and_announce_logs(formatted_url, filename, color_int, name, channels, bot)
+    semaphore = asyncio.Semaphore(config.get("log_check_concurrency", 5))  # configurable
+
+    async def sem_check(source_name, source_info):
+        async with semaphore:
+            formatted_url = f"{source_info['url']}?api_key={get_warcraft_logs_token()}"
+            color_int = hex_to_int(source_info['color'])
+            channels = [config['channel_ids'][ch] for ch in source_info['channels']]
+            filename = f"logs/{source_info['filename']}"
+            await check_and_announce_logs(formatted_url, filename, color_int, source_name, channels, bot)
+
+    await asyncio.gather(*(sem_check(name, source) for name, source in config['log_sources'].items()))
 
 
 async def check_and_announce_logs(url, filename, color, log_source_name, channels, bot):

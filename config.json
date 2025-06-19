@@ -8,6 +8,7 @@
     "channel_fluidy": 1333559135135862868,
     "channel_fluidy_top20": 1383888050576425001
   },
+  "log_check_concurrency": 5,
   "log_sources": {
     "Mightytsuu": {
       "url": "https://www.warcraftlogs.com:443/v1/reports/user/Mightytsuu",
