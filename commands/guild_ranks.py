@@ -9,8 +9,10 @@ from datetime import datetime, timezone
 from urllib.parse import quote, quote_plus
 
 DEFAULT_RAID_SLUG = "liberation-of-undermine"
-
 THUMBNAIL_URL = "https://cdn.raiderio.net/images/brand/Icon_2ColorWhite.png"
+
+CONFIG = get_config()
+RAIDERIO_TOKEN = os.getenv("RAIDERIO_TOKEN", "").strip()
 
 
 def setup_guild_rank_tracker(bot):
@@ -21,10 +23,8 @@ def setup_guild_rank_tracker(bot):
 
 
 def schedule_guild_rank_job(bot):
-    config = get_config()
-    info = config.get("guild_rank_group", {})
-
-    cron_schedule = info.get("cron_schedule", "*/15 * * * *")  # Every 15 minutes by default
+    info = CONFIG.get("guild_rank_group", {})
+    cron_schedule = info.get("cron_schedule", "*/15 * * * *")
     bot.d.sched.add_job(
         check_all_guild_ranks,
         CronTrigger.from_crontab(cron_schedule),
@@ -36,26 +36,23 @@ def schedule_guild_rank_job(bot):
 
 
 async def run_guild_rank_check_once(bot):
-    config = get_config()
-    info = config.get("guild_rank_group", {})
+    info = CONFIG.get("guild_rank_group", {})
     await check_all_guild_ranks(bot, info, info.get("raid_slug", DEFAULT_RAID_SLUG))
 
 
 async def fetch_guild_rank(region, realm, name, raid_slug):
-    token = os.getenv("RAIDERIO_TOKEN")
-    if not token:
+    if not RAIDERIO_TOKEN:
         print("Warning: RAIDERIO_TOKEN not set in environment.")
 
     region_enc = quote(region)
     realm_enc = quote(realm)
-    name_enc = quote_plus(name)  # encode name correctly ONCE
+    name_enc = quote_plus(name)
 
     print(f"Fetching {raid_slug.replace('-', ' ').title()} rank for {name} in {region}/{realm}...")
-    print(f"Fetching URL: https://raider.io/api/v1/guilds/profile?access_key={token}&region={region_enc}&realm={realm_enc}&name={name_enc}&fields=raid_progression,raid_rankings")
 
     url = (
         f"https://raider.io/api/v1/guilds/profile?"
-        f"access_key={token}&"
+        f"access_key={RAIDERIO_TOKEN}&"
         f"region={region_enc}&"
         f"realm={realm_enc}&"
         f"name={name_enc}&"
@@ -76,13 +73,15 @@ async def fetch_guild_rank(region, realm, name, raid_slug):
                 return {"world_rank": "N/A", "summary": "N/A"}
 
             summary = raid_data.get('summary', 'N/A')
-
             raid_rankings = data.get('raid_rankings', {})
             rank_info = raid_rankings.get(raid_slug, {})
             mythic_rank = rank_info.get('mythic', {})
             world_rank = mythic_rank.get('world', 'N/A')
 
-            return {"world_rank": str(world_rank) if world_rank != "N/A" else "N/A", "summary": summary}
+            return {
+                "world_rank": str(world_rank) if world_rank != "N/A" else "N/A",
+                "summary": summary
+            }
 
 
 async def check_all_guild_ranks(bot, info, raid_slug):
@@ -105,50 +104,47 @@ async def check_all_guild_ranks(bot, info, raid_slug):
     def parse_rank(rank_str):
         try:
             rank = int(rank_str)
-            if rank <= 0:
-                return 999999
-            return rank
+            return rank if rank > 0 else 999999
         except (ValueError, TypeError):
             return 999999
 
-    guilds_with_ranks = []
-    for g in guilds:
-        print(f"Checking guild: {g['name']}")
-        data = await fetch_guild_rank(g["region"], g["realm"], g["name"], raid_slug)
-        if not data:
-            guilds_with_ranks.append({
+    semaphore = asyncio.Semaphore(CONFIG.get("concurrency_limit", 5))
+
+    async def fetch_and_parse(g):
+        async with semaphore:
+            print(f"Checking guild: {g['name']}")
+            data = await fetch_guild_rank(g["region"], g["realm"], g["name"], raid_slug)
+            if not data:
+                return {
+                    "name": g['name'],
+                    "region": g['region'],
+                    "realm": g['realm'],
+                    "rank_str": "N/A",
+                    "rank_int": 999999,
+                    "summary": "Failed to fetch"
+                }
+
+            rank = data.get("world_rank", "N/A")
+            summary = data.get("summary", "N/A")
+            key = f"{g['region']}:{g['realm']}:{g['name']}"
+            prev_data = previous_ranks.get(key, {})
+
+            nonlocal updated
+            if rank != prev_data.get("world_rank") or summary != prev_data.get("summary"):
+                print(f"Update for {g['name']}: {prev_data.get('world_rank')} -> {rank} and {prev_data.get('summary')} -> {summary}")
+                previous_ranks[key] = {"world_rank": rank, "summary": summary}
+                updated = True
+
+            return {
                 "name": g['name'],
                 "region": g['region'],
                 "realm": g['realm'],
-                "rank_str": "N/A",
-                "rank_int": 999999,
-                "summary": "Failed to fetch"
-            })
-            continue
+                "rank_str": rank,
+                "rank_int": parse_rank(rank),
+                "summary": summary
+            }
 
-        rank = data.get("world_rank", "N/A")
-        summary = data.get("summary", "N/A")
-
-        key = f"{g['region']}:{g['realm']}:{g['name']}"
-        previous_data = previous_ranks.get(key, {})
-        prev_rank = previous_data.get("world_rank", "N/A")
-        prev_summary = previous_data.get("summary", "N/A")
-
-        if rank != prev_rank or summary != prev_summary:
-            print(f"Update for {g['name']}: {prev_rank} -> {rank} and {prev_summary} -> {summary}")
-            previous_ranks[key] = {"world_rank": rank, "summary": summary}
-            updated = True
-
-        guilds_with_ranks.append({
-            "name": g['name'],
-            "region": g['region'],
-            "realm": g['realm'],
-            "rank_str": rank,
-            "rank_int": parse_rank(rank),
-            "summary": summary,
-        })
-
-        await asyncio.sleep(0.3)
+    guilds_with_ranks = await asyncio.gather(*[fetch_and_parse(g) for g in guilds])
 
     if not updated:
         print("No rank or summary updates found.")
@@ -192,13 +188,12 @@ async def check_all_guild_ranks(bot, info, raid_slug):
 
     embed.add_field(name="Last Update", value=f"<t:{unix_ts}:R>", inline=False)
 
-    config = get_config()
     channel_keys = info["channel_key"]
     if isinstance(channel_keys, str):
         channel_keys = [channel_keys]
 
     for ch_key in channel_keys:
-        channel_id = config["channel_ids"].get(ch_key)
+        channel_id = CONFIG["channel_ids"].get(ch_key)
         if not channel_id:
             print(f"Channel key '{ch_key}' not found in config channel_ids.")
             continue

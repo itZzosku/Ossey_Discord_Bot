@@ -238,6 +238,7 @@
       { "name": "Kuura", "region": "eu", "realm": "Argent Dawn" }
     ],
     "cron_schedule": "*/10 * * * *",
+    "concurrency_limit": 10,
     "raid_slug": "liberation-of-undermine",
     "filename": "guild_ranks_grouped.json",
     "message_filename": "guild_rank_message.json",
