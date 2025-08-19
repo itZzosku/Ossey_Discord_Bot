@@ -8,7 +8,7 @@ from utils import get_config
 from datetime import datetime, timezone
 from urllib.parse import quote, quote_plus
 
-DEFAULT_RAID_SLUG = "liberation-of-undermine"
+DEFAULT_RAID_SLUG = "manaforge-omega"
 THUMBNAIL_URL = "https://cdn.raiderio.net/images/brand/Icon_2ColorWhite.png"
 
 CONFIG = get_config()
@@ -48,7 +48,7 @@ async def fetch_guild_rank(region, realm, name, raid_slug):
     realm_enc = quote(realm)
     name_enc = quote_plus(name)
 
-    print(f"Fetching {raid_slug.replace('-', ' ').title()} rank for {name} in {region}/{realm}...")
+    print(f"Fetching {raid_slug.replace('-', ' ').title()} ranks for {name} in {region}/{realm}...")
 
     url = (
         f"https://raider.io/api/v1/guilds/profile?"
@@ -70,16 +70,25 @@ async def fetch_guild_rank(region, realm, name, raid_slug):
             raid_data = raid_prog.get(raid_slug)
             if not raid_data:
                 print(f"No {raid_slug} data for {name}")
-                return {"world_rank": "N/A", "summary": "N/A"}
+                return {
+                    "mythic_world_rank": "N/A",
+                    "heroic_world_rank": "N/A",
+                    "normal_world_rank": "N/A",
+                    "summary": "N/A"
+                }
 
             summary = raid_data.get('summary', 'N/A')
             raid_rankings = data.get('raid_rankings', {})
             rank_info = raid_rankings.get(raid_slug, {})
+
             mythic_rank = rank_info.get('mythic', {})
-            world_rank = mythic_rank.get('world', 'N/A')
+            heroic_rank = rank_info.get('heroic', {})
+            normal_rank = rank_info.get('normal', {})
 
             return {
-                "world_rank": str(world_rank) if world_rank != "N/A" else "N/A",
+                "mythic_world_rank": str(mythic_rank.get('world', 'N/A')),
+                "heroic_world_rank": str(heroic_rank.get('world', 'N/A')),
+                "normal_world_rank": str(normal_rank.get('world', 'N/A')),
                 "summary": summary
             }
 
@@ -119,29 +128,87 @@ async def check_all_guild_ranks(bot, info, raid_slug):
                     "name": g['name'],
                     "region": g['region'],
                     "realm": g['realm'],
-                    "rank_str": "N/A",
-                    "rank_int": 999999,
-                    "summary": "Failed to fetch"
+                    "mythic_rank_str": "N/A",
+                    "mythic_rank_int": 999999,
+                    "heroic_rank_str": "N/A",
+                    "heroic_rank_int": 999999,
+                    "normal_rank_str": "N/A",
+                    "normal_rank_int": 999999,
+                    "summary": "Failed to fetch",
+                    "difficulty": 0,  # no kills
+                    "progress_score": 0,
                 }
 
-            rank = data.get("world_rank", "N/A")
+            mythic_rank = data.get("mythic_world_rank", "N/A")
+            heroic_rank = data.get("heroic_world_rank", "N/A")
+            normal_rank = data.get("normal_world_rank", "N/A")
             summary = data.get("summary", "N/A")
+
+            # assign difficulty bucket
+            if mythic_rank != "N/A":
+                difficulty = 3
+            elif heroic_rank != "N/A":
+                difficulty = 2
+            elif normal_rank != "N/A":
+                difficulty = 1
+            else:
+                difficulty = 0
+
+            # calculate progress score based on summary (e.g., "3/8 M")
+            progress_score = 0
+            try:
+                if summary != "N/A":
+                    parts = summary.split()
+                    killed_part = parts[0] if len(parts) >= 2 else "0/0"
+                    diff_part = parts[-1].upper()
+                    killed_num = int(killed_part.split("/")[0])
+                    if diff_part == "M":
+                        progress_score = 3000 + killed_num
+                    elif diff_part == "H":
+                        progress_score = 2000 + killed_num
+                    elif diff_part == "N":
+                        progress_score = 1000 + killed_num
+            except Exception:
+                progress_score = 0
+
             key = f"{g['region']}:{g['realm']}:{g['name']}"
             prev_data = previous_ranks.get(key, {})
 
             nonlocal updated
-            if rank != prev_data.get("world_rank") or summary != prev_data.get("summary"):
-                print(f"Update for {g['name']}: {prev_data.get('world_rank')} -> {rank} and {prev_data.get('summary')} -> {summary}")
-                previous_ranks[key] = {"world_rank": rank, "summary": summary}
+            if (
+                    mythic_rank != prev_data.get("mythic_world_rank")
+                    or heroic_rank != prev_data.get("heroic_world_rank")
+                    or normal_rank != prev_data.get("normal_world_rank")
+                    or summary != prev_data.get("summary")
+            ):
+                print(
+                    f"Update for {g['name']}: "
+                    f"Mythic {prev_data.get('mythic_world_rank')} -> {mythic_rank}, "
+                    f"Heroic {prev_data.get('heroic_world_rank')} -> {heroic_rank}, "
+                    f"Normal {prev_data.get('normal_world_rank')} -> {normal_rank}, "
+                    f"Summary {prev_data.get('summary')} -> {summary}"
+                )
+                previous_ranks[key] = {
+                    "mythic_world_rank": mythic_rank,
+                    "heroic_world_rank": heroic_rank,
+                    "normal_world_rank": normal_rank,
+                    "summary": summary,
+                }
                 updated = True
 
             return {
                 "name": g['name'],
                 "region": g['region'],
                 "realm": g['realm'],
-                "rank_str": rank,
-                "rank_int": parse_rank(rank),
-                "summary": summary
+                "mythic_rank_str": mythic_rank,
+                "mythic_rank_int": parse_rank(mythic_rank),
+                "heroic_rank_str": heroic_rank,
+                "heroic_rank_int": parse_rank(heroic_rank),
+                "normal_rank_str": normal_rank,
+                "normal_rank_int": parse_rank(normal_rank),
+                "summary": summary,
+                "difficulty": difficulty,
+                "progress_score": progress_score,
             }
 
     guilds_with_ranks = await asyncio.gather(*[fetch_and_parse(g) for g in guilds])
@@ -156,7 +223,26 @@ async def check_all_guild_ranks(bot, info, raid_slug):
         json.dump(previous_ranks, f, indent=2, ensure_ascii=False)
     print(f"Updated ranks saved to {ranks_file}")
 
-    guilds_with_ranks.sort(key=lambda x: x['rank_int'])
+    # Sort: Mythic > Heroic > Normal > None, then by best rank inside that bucket
+    def sort_key(g):
+        if g["difficulty"] == 3:
+            return (0, g["mythic_rank_int"])
+        elif g["difficulty"] == 2:
+            return (1, g["heroic_rank_int"])
+        elif g["difficulty"] == 1:
+            return (2, g["normal_rank_int"])
+        else:
+            return (3, 999999)
+
+    # Sort by progress_score descending, then by best world rank as tiebreaker
+    guilds_with_ranks.sort(
+        key=lambda g: (
+            -g["progress_score"],  # highest progress first
+            g["mythic_rank_int"],  # best mythic rank first
+            g["heroic_rank_int"],  # best heroic rank next
+            g["normal_rank_int"]  # best normal rank last
+        )
+    )
 
     now = datetime.now(timezone.utc)
     unix_ts = int(now.timestamp())
@@ -164,7 +250,6 @@ async def check_all_guild_ranks(bot, info, raid_slug):
     embed = hikari.Embed(
         title=f"Guild World Ranks   -   {raid_slug.replace('-', ' ').title()}",
         color=0x0070FF,
-
     )
     embed.set_thumbnail(THUMBNAIL_URL)
 
@@ -176,12 +261,29 @@ async def check_all_guild_ranks(bot, info, raid_slug):
 
         display_name = g['name']
 
-        rank_str = f"#{g['rank_str']}" if g['rank_str'] != "N/A" else "N/A"
+        # Determine the best available rank to display
+        if g['mythic_rank_int'] < 999999:
+            best_diff = "Mythic"
+            best_rank_str = f"#{g['mythic_rank_str']}"
+        elif g['heroic_rank_int'] < 999999:
+            best_diff = "Heroic"
+            best_rank_str = f"#{g['heroic_rank_str']}"
+        elif g['normal_rank_int'] < 999999:
+            best_diff = "Normal"
+            best_rank_str = f"#{g['normal_rank_str']}"
+        else:
+            best_diff = "N/A"
+            best_rank_str = "N/A"
+
         summary = g.get("summary", "N/A")
         profile_url = f"https://raider.io/guilds/{g['region'].lower()}/{quote(g['realm'].lower())}/{quote(g['name'])}"
 
-        field_name = f"{display_name}   -    World Rank {rank_str}"
-        field_value = f"Progress: {summary}   -   [Raider.IO Link]({profile_url})"
+        field_name = f"{display_name}"
+        field_value = (
+            f"World Rank: {best_diff} {best_rank_str}\n"
+            f"Progress: {summary}\n"
+            f"[Raider.IO Link]({profile_url})"
+        )
 
         embed.add_field(name=field_name, value=field_value, inline=False)
         count += 1
