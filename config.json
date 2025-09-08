@@ -236,6 +236,7 @@
       { "name": "Olohuone", "region": "eu", "realm": "Stormreaver" },
       { "name": "Pari Pelikaljaa", "region": "eu", "realm": "Stormreaver" },
       { "name": "Härdelli", "region": "eu", "realm": "Twisting Nether" },
+      { "name": "Rennosti", "region": "eu", "realm": "Stormreaver" },
       { "name": "Kuura", "region": "eu", "realm": "Argent Dawn" }
     ],
     "cron_schedule": "*/10 * * * *",
