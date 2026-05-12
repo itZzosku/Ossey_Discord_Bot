@@ -1,24 +1,26 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import hikari
+import lightbulb
 import aiohttp
 import os
 import os.path
-from utils import hex_to_int, get_warcraft_logs_token, get_config
 import asyncio
+from utils import hex_to_int, get_warcraft_logs_token, get_config
 
-# Constants
 LOGS_BASE_URL = "https://www.warcraftlogs.com/reports/"
 THUMBNAIL_URL = "https://pbs.twimg.com/profile_images/1550453257947979784/U9D70T0S_400x400.jpg"
 
-
-def setup_warcraft_logs(bot):
-    @bot.listen(hikari.StartedEvent)
-    async def on_started(_: hikari.StartedEvent) -> None:
-        await run_checks_once(bot)
-        await initialize_log_checks(bot)
+loader = lightbulb.Loader()
 
 
-async def initialize_log_checks(bot):
+@loader.listener(hikari.StartedEvent)
+async def on_started(event: hikari.StartedEvent, bot: hikari.GatewayBot, sched: AsyncIOScheduler) -> None:
+    await run_checks_once(bot)
+    await initialize_log_checks(bot, sched)
+
+
+async def initialize_log_checks(bot: hikari.GatewayBot, sched: AsyncIOScheduler):
     warcraft_logs_token = get_warcraft_logs_token()
     config = get_config()
     channel_ids = config['channel_ids']
@@ -27,19 +29,21 @@ async def initialize_log_checks(bot):
         formatted_url = f"{source['url']}?api_key={warcraft_logs_token}"
         color_int = hex_to_int(source['color'])
         channels = [channel_ids[ch] for ch in source['channels']]
-        cron_schedule = source.get('cron_schedule', '*/5')  # Default to every 5 minutes if not specified
-        schedule_log_check(bot, name, formatted_url, f"logs/{source['filename']}", color_int, channels, cron_schedule)
+        cron_schedule = source.get('cron_schedule', '*/5')
+
+        sched.add_job(
+            check_and_announce_logs,
+            CronTrigger.from_crontab(cron_schedule),
+            args=[formatted_url, f"logs/{source['filename']}", color_int, name, channels, bot],
+            misfire_grace_time=None,
+            replace_existing=True,
+            id=name
+        )
 
 
-def schedule_log_check(bot, job_id, url, filename, color, channels, cron_schedule):
-    bot.d.sched.add_job(check_and_announce_logs, CronTrigger.from_crontab(cron_schedule),
-                        args=[url, filename, color, job_id, channels, bot],
-                        misfire_grace_time=None, replace_existing=True, id=job_id)
-
-
-async def run_checks_once(bot):
+async def run_checks_once(bot: hikari.GatewayBot):
     config = get_config()
-    semaphore = asyncio.Semaphore(config.get("log_check_concurrency", 5))  # configurable
+    semaphore = asyncio.Semaphore(config.get("log_check_concurrency", 5))
 
     async def sem_check(source_name, source_info):
         async with semaphore:
@@ -82,12 +86,8 @@ async def check_and_announce_logs(url, filename, color, log_source_name, channel
 async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name, channels):
     title = log['title']
     owner = log['owner']
-    starttime = log['start']
-    startimestring = str(starttime)[:-3]
-    starttimeformatted = "<t:" + startimestring + ":R>"
-    endtime = log['end']
-    endtimestring = str(endtime)[:-3]
-    endtimeformatted = "<t:" + endtimestring + ":R>"
+    starttimeformatted = f"<t:{str(log['start'])[:-3]}:R>"
+    endtimeformatted = f"<t:{str(log['end'])[:-3]}:R>"
     link = LOGS_BASE_URL + logs_id
 
     embed = create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name)
@@ -95,27 +95,24 @@ async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name,
     for channel_id in channels:
         await bot.rest.create_message(channel_id, embed)
 
-    # Read existing log IDs or initialize an empty list
+    previous_logs_ids = []
     if os.path.exists(filename):
         with open(filename, "r") as f:
             previous_logs_ids = f.read().splitlines()
-    else:
-        previous_logs_ids = []
 
-    # Add the new ID to the list and keep only the last 5
     previous_logs_ids.append(logs_id)
     with open(filename, "w") as f:
-        f.writelines("\n".join(previous_logs_ids[-5:]))  # Save only the last 5 IDs
+        f.writelines("\n".join(previous_logs_ids[-5:]))
 
 
 def create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name):
     embed = hikari.Embed(title=f"{log_source_name} has uploaded new Warcraft Logs", color=color)
     embed.set_thumbnail(THUMBNAIL_URL)
-    embed.add_field(name="Title:", value=f'{title}', inline=True)
-    embed.add_field(name="Author:", value=f'{owner}', inline=True)
-    embed.add_field(name="Log source:", value=f'{log_source_name}', inline=True)
-    embed.add_field(name="Start time:", value=f'{starttimeformatted}', inline=True)
-    embed.add_field(name="End time:", value=f'{endtimeformatted}', inline=True)
-    embed.add_field(name="‎", value=f'‎', inline=True)
-    embed.add_field(name="Link:", value=f'{link}', inline=False)
+    embed.add_field(name="Title:", value=title, inline=True)
+    embed.add_field(name="Author:", value=owner, inline=True)
+    embed.add_field(name="Log source:", value=log_source_name, inline=True)
+    embed.add_field(name="Start time:", value=starttimeformatted, inline=True)
+    embed.add_field(name="End time:", value=endtimeformatted, inline=True)
+    embed.add_field(name="‎", value="‎", inline=True)
+    embed.add_field(name="Link:", value=link, inline=False)
     return embed
