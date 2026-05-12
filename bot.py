@@ -14,7 +14,7 @@ bot = hikari.GatewayBot(
 
 client = lightbulb.client_from_app(
     bot,
-    default_enabled_guilds=(411182531254288385, 117961133083721731),
+    default_enabled_guilds=(411182531254288385, 117961133083721731, 1216424565136298025,),
 )
 
 bot.subscribe(hikari.StoppingEvent, client.stop)
