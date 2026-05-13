@@ -1,13 +1,10 @@
 import lightbulb
 
+loader = lightbulb.Loader()
 
-def pong_command(bot):
-    @bot.command
-    @lightbulb.command("pong", "Responds with Ping!")
-    @lightbulb.implements(lightbulb.SlashCommand)
-    async def pong(ctx):
+
+@loader.command
+class Pong(lightbulb.SlashCommand, name="pong", description="Responds with Ping!"):
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
         await ctx.respond("Ping!")
-
-
-def setup(bot):
-    pong_command(bot)

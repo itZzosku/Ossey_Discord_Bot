@@ -1,6 +1,8 @@
 import os
 import hikari
+import lightbulb
 import asyncpraw
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from dotenv import load_dotenv
 
@@ -15,7 +17,9 @@ REDDIT_USER_AGENT = os.getenv(
     "script:reddit_to_discord:v1.0 (by /u/YOUR_USERNAME)"
 )
 
-reddit = None  # Will hold asyncpraw.Reddit instance
+reddit = None
+
+loader = lightbulb.Loader()
 
 
 def setup_reddit():
@@ -27,18 +31,14 @@ def setup_reddit():
     )
 
 
-def setup_reddit_tracker(bot):
-    @bot.listen(hikari.StartedEvent)
-    async def on_started(event: hikari.StartedEvent) -> None:
-        # Initialize Reddit instance synchronously before first use
-        setup_reddit()
-
-        # Run your initial checks and setup scheduled jobs
-        await run_initial_check(bot)
-        await initialize_reddit_checks(bot)
+@loader.listener(hikari.StartedEvent)
+async def on_started(event: hikari.StartedEvent, bot: hikari.GatewayBot, sched: AsyncIOScheduler) -> None:
+    setup_reddit()
+    await run_initial_check(bot)
+    await initialize_reddit_checks(bot, sched)
 
 
-async def initialize_reddit_checks(bot):
+async def initialize_reddit_checks(bot: hikari.GatewayBot, sched: AsyncIOScheduler):
     config = get_config()
     reddit_sources = config.get("reddit_sources", {})
     channel_ids = config.get("channel_ids", {})
@@ -48,10 +48,9 @@ async def initialize_reddit_checks(bot):
         color_int = hex_to_int(source.get("color", "#ffffff"))
         filename = source.get("filename", f"reddit/{username}.txt")
         channels = [channel_ids[ch] for ch in source["channels"]]
+        cron_schedule = source.get("cron_schedule", "*/5")
 
-        cron_schedule = source.get("cron_schedule", "*/5")  # default every 5 minutes
-
-        bot.d.sched.add_job(
+        sched.add_job(
             check_and_announce_reddit,
             CronTrigger.from_crontab(cron_schedule),
             args=[bot, username, filename, color_int, channels],
@@ -61,7 +60,7 @@ async def initialize_reddit_checks(bot):
         )
 
 
-async def run_initial_check(bot):
+async def run_initial_check(bot: hikari.GatewayBot):
     config = get_config()
     reddit_sources = config.get("reddit_sources", {})
     channel_ids = config.get("channel_ids", {})
@@ -71,19 +70,16 @@ async def run_initial_check(bot):
         color_int = hex_to_int(source.get("color", "#ffffff"))
         filename = source.get("filename", f"reddit/{username}.txt")
         channels = [channel_ids[ch] for ch in source["channels"]]
-
         await check_and_announce_reddit(bot, username, filename, color_int, channels)
 
 
 async def check_and_announce_reddit(bot, username, base_filename, color, channels):
-    # 1) Submissions
     new_submissions = await fetch_all_submissions(username)
     if new_submissions:
         await announce_submissions(bot, username, base_filename, color, channels, new_submissions)
     else:
         print(f"[Reddit] No submissions found for u/{username}.")
 
-    # 2) Comments
     new_comments = await fetch_all_comments(username)
     if new_comments:
         comments_filename = base_filename.replace(".txt", "_comments.txt")
@@ -95,7 +91,7 @@ async def check_and_announce_reddit(bot, username, base_filename, color, channel
 async def fetch_all_submissions(username: str):
     results = []
     try:
-        redditor = await reddit.redditor(username)  # Await here!
+        redditor = await reddit.redditor(username)
         async for submission in redditor.submissions.new(limit=None):
             results.append(submission)
     except Exception as ex:
@@ -106,7 +102,7 @@ async def fetch_all_submissions(username: str):
 async def fetch_all_comments(username: str):
     results = []
     try:
-        redditor = await reddit.redditor(username)  # Await here!
+        redditor = await reddit.redditor(username)
         async for comment in redditor.comments.new(limit=None):
             results.append(comment)
     except Exception as ex:
@@ -123,7 +119,6 @@ async def announce_submissions(bot, username, filename, color, channels, submiss
             seen_ids = set(line.strip() for line in f)
 
     unannounced = [s for s in submissions if s.id not in seen_ids]
-
     if not unannounced:
         print(f"[Reddit] All submissions by u/{username} already announced.")
         return
@@ -152,7 +147,6 @@ async def announce_comments(bot, username, filename, color, channels, comments):
             seen_ids = set(line.strip() for line in f)
 
     unannounced = [c for c in comments if c.id not in seen_ids]
-
     if not unannounced:
         print(f"[Reddit] All comments by u/{username} already announced.")
         return
@@ -174,8 +168,6 @@ async def announce_comments(bot, username, filename, color, channels, comments):
 
 def create_submission_embed(submission, color):
     created_ts = int(submission.created_utc)
-    relative_time = f"<t:{created_ts}:R>"
-
     embed = hikari.Embed(
         title=f"New post by u/{submission.author}",
         description=submission.title,
@@ -183,14 +175,12 @@ def create_submission_embed(submission, color):
     )
     embed.add_field("Submission URL", submission.url, inline=False)
     embed.add_field("Reddit Link", f"https://reddit.com{submission.permalink}", inline=False)
-    embed.add_field("Posted", relative_time, inline=False)
+    embed.add_field("Posted", f"<t:{created_ts}:R>", inline=False)
     return embed
 
 
 def create_comment_embed(comment, color):
     created_ts = int(comment.created_utc)
-    relative_time = f"<t:{created_ts}:R>"
-
     embed = hikari.Embed(
         title=f"New comment by u/{comment.author}",
         description=(comment.body[:1024] if comment.body else "No body"),
@@ -198,5 +188,5 @@ def create_comment_embed(comment, color):
     )
     embed.add_field("Subreddit", str(comment.subreddit), inline=False)
     embed.add_field("Comment Link", f"https://reddit.com{comment.permalink}", inline=False)
-    embed.add_field("Posted", relative_time, inline=False)
+    embed.add_field("Posted", f"<t:{created_ts}:R>", inline=False)
     return embed

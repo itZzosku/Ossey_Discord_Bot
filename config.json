@@ -104,8 +104,8 @@
         "channel_mightytsuu"
       ]
     },
-    "IHAN SAMA PH-tiimi": {
-      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/PH-tiimi/Stormreaver/eu",
+    "IHAN SAMA SPH-tiimi": {
+      "url": "https://www.warcraftlogs.com:443/v1/reports/guild/SPH-tiimi/Stormreaver/eu",
       "color": "#04173e",
       "filename": "previouslogsid_IHAN_SAMA_PH.txt",
       "cron_schedule": "*/5 * * * *",

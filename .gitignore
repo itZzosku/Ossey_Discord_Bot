@@ -8,3 +8,4 @@ token.json
 /logs/previouslogsid_nave.txt
 /logs/
 /.env
+/.venv
