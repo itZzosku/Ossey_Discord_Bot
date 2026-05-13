@@ -2,6 +2,7 @@ import lightbulb
 
 loader = lightbulb.Loader()
 
+
 @loader.command
 class Pong(lightbulb.SlashCommand, name="pong", description="Responds with Ping!"):
     @lightbulb.invoke
