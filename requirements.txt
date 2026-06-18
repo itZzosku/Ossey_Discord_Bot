@@ -2,7 +2,7 @@ aiohttp
 aiosignal
 APScheduler
 async-timeout
-attrs
+attrs==25.*
 certifi
 charset-normalizer
 colorama
