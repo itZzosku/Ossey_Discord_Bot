@@ -77,10 +77,13 @@ async def check_and_announce_logs(url, filename, color, log_source_name, channel
         else:
             print(f"Latest logs have already been announced ID: {logs_id}")
 
+    except aiohttp.ClientResponseError as e:
+        # Don't print e itself: its message contains the request URL with the API key.
+        print(f"[WCL] {log_source_name}: HTTP {e.status} {e.message}")
     except aiohttp.ClientError as e:
-        print(f"HTTP request error: {e}")
+        print(f"[WCL] {log_source_name}: request failed ({type(e).__name__}): {redact(str(e))}")
     except Exception as e:
-        print(f"Error occurred: {e}")
+        print(f"[WCL] {log_source_name}: error ({type(e).__name__}): {redact(str(e))}")
 
 
 async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name, channels):
@@ -106,6 +109,12 @@ async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name,
     previous_logs_ids.append(logs_id)
     with open(filename, "w") as f:
         f.writelines("\n".join(previous_logs_ids[-5:]))
+
+
+def redact(text: str) -> str:
+    """Strip the Warcraft Logs API key from any text before it is logged."""
+    token = get_warcraft_logs_token()
+    return text.replace(token, "***") if token else text
 
 
 def create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name):
