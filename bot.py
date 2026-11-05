@@ -1,7 +1,7 @@
 import hikari
 import lightbulb
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from utils import get_discord_token
+from utils import get_discord_token, get_config
 from commands import setup
 from dotenv import load_dotenv
 
@@ -9,12 +9,13 @@ load_dotenv()
 
 bot = hikari.GatewayBot(
     token=get_discord_token(),
-    intents=hikari.Intents.ALL,
+    # Slash commands + REST only; no privileged intents needed.
+    intents=hikari.Intents.GUILDS,
 )
 
 client = lightbulb.client_from_app(
     bot,
-    default_enabled_guilds=(411182531254288385, 117961133083721731, 1216424565136298025,),
+    default_enabled_guilds=tuple(get_config().get("guild_ids", [])),
 )
 
 bot.subscribe(hikari.StoppingEvent, client.stop)
@@ -33,4 +34,10 @@ async def on_starting(event: hikari.StartingEvent) -> None:
     await client.start(event)  # then start the client so it syncs with commands already loaded
 
 
-bot.run()
+@bot.listen(hikari.StoppingEvent)
+async def on_stopping(event: hikari.StoppingEvent) -> None:
+    sched.shutdown(wait=False)
+
+
+if __name__ == "__main__":
+    bot.run()

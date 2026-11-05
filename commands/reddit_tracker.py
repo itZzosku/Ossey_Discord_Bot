@@ -38,6 +38,12 @@ async def on_started(event: hikari.StartedEvent, bot: hikari.GatewayBot, sched: 
     await initialize_reddit_checks(bot, sched)
 
 
+@loader.listener(hikari.StoppingEvent)
+async def on_stopping(event: hikari.StoppingEvent) -> None:
+    if reddit is not None:
+        await reddit.close()
+
+
 async def initialize_reddit_checks(bot: hikari.GatewayBot, sched: AsyncIOScheduler):
     config = get_config()
     reddit_sources = config.get("reddit_sources", {})
@@ -48,7 +54,7 @@ async def initialize_reddit_checks(bot: hikari.GatewayBot, sched: AsyncIOSchedul
         color_int = hex_to_int(source.get("color", "#ffffff"))
         filename = source.get("filename", f"reddit/{username}.txt")
         channels = [channel_ids[ch] for ch in source["channels"]]
-        cron_schedule = source.get("cron_schedule", "*/5")
+        cron_schedule = source.get("cron_schedule", "*/5 * * * *")
 
         sched.add_job(
             check_and_announce_reddit,
@@ -73,97 +79,73 @@ async def run_initial_check(bot: hikari.GatewayBot):
         await check_and_announce_reddit(bot, username, filename, color_int, channels)
 
 
+# How many recent items to fetch per check. New items always appear at the top
+# of the listing, so a small window is enough and keeps API usage low.
+FETCH_LIMIT = 25
+
+
 async def check_and_announce_reddit(bot, username, base_filename, color, channels):
-    new_submissions = await fetch_all_submissions(username)
-    if new_submissions:
-        await announce_submissions(bot, username, base_filename, color, channels, new_submissions)
-    else:
-        print(f"[Reddit] No submissions found for u/{username}.")
+    submissions = await fetch_recent(username, "submissions")
+    if submissions is not None:
+        await announce_new(bot, "submission", username, base_filename, channels, submissions,
+                           lambda s: create_submission_embed(s, color))
 
-    new_comments = await fetch_all_comments(username)
-    if new_comments:
+    comments = await fetch_recent(username, "comments")
+    if comments is not None:
         comments_filename = base_filename.replace(".txt", "_comments.txt")
-        await announce_comments(bot, username, comments_filename, color, channels, new_comments)
-    else:
-        print(f"[Reddit] No comments found for u/{username}.")
+        await announce_new(bot, "comment", username, comments_filename, channels, comments,
+                           lambda c: create_comment_embed(c, color))
 
 
-async def fetch_all_submissions(username: str):
+async def fetch_recent(username: str, listing: str):
+    """Return the newest items from a redditor's submissions/comments, or None on error."""
     results = []
     try:
         redditor = await reddit.redditor(username)
-        async for submission in redditor.submissions.new(limit=None):
-            results.append(submission)
+        async for item in getattr(redditor, listing).new(limit=FETCH_LIMIT):
+            results.append(item)
     except Exception as ex:
-        print(f"[Error] while fetching submissions for {username}: {ex}")
+        print(f"[Reddit] Error while fetching {listing} for u/{username}: {type(ex).__name__}: {ex}")
+        return None
     return results
 
 
-async def fetch_all_comments(username: str):
-    results = []
+async def send_to_channels(bot, channels, embed):
+    for cid in channels:
+        try:
+            await bot.rest.create_message(cid, embed=embed)
+        except Exception as ex:
+            print(f"[Reddit] Failed to send to channel {cid}: {type(ex).__name__}: {ex}")
+
+
+async def announce_new(bot, kind, username, filename, channels, items, make_embed):
+    if os.path.dirname(filename):
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    if not os.path.exists(filename):
+        # First run for this source: record what already exists instead of
+        # flooding the channels with the user's whole history.
+        with open(filename, "w") as f:
+            f.write("\n".join(i.id for i in items))
+        print(f"[Reddit] Seeded {len(items)} existing {kind}s for u/{username}, nothing announced.")
+        return
+
+    with open(filename, "r") as f:
+        seen_ids = set(line.strip() for line in f if line.strip())
+
+    unannounced = sorted((i for i in items if i.id not in seen_ids), key=lambda i: i.created_utc)
+    if not unannounced:
+        print(f"[Reddit] No new {kind}s for u/{username}.")
+        return
+
+    print(f"[Reddit] Found {len(unannounced)} new {kind}s by u/{username}.")
     try:
-        redditor = await reddit.redditor(username)
-        async for comment in redditor.comments.new(limit=None):
-            results.append(comment)
-    except Exception as ex:
-        print(f"[Error] while fetching comments for {username}: {ex}")
-    return results
-
-
-async def announce_submissions(bot, username, filename, color, channels, submissions):
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-    seen_ids = set()
-    if os.path.exists(filename):
-        with open(filename, "r") as f:
-            seen_ids = set(line.strip() for line in f)
-
-    unannounced = [s for s in submissions if s.id not in seen_ids]
-    if not unannounced:
-        print(f"[Reddit] All submissions by u/{username} already announced.")
-        return
-
-    unannounced.sort(key=lambda s: s.created_utc)
-    print(f"[Reddit] Found {len(unannounced)} new submissions by u/{username}.")
-
-    for submission in unannounced:
-        embed = create_submission_embed(submission, color)
-        for cid in channels:
-            await bot.rest.create_message(cid, embed=embed)
-        seen_ids.add(submission.id)
-
-    with open(filename, "w") as f:
-        f.write("\n".join(seen_ids))
-
-    print(f"[Reddit] Announced {len(unannounced)} new submissions for u/{username}.")
-
-
-async def announce_comments(bot, username, filename, color, channels, comments):
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-    seen_ids = set()
-    if os.path.exists(filename):
-        with open(filename, "r") as f:
-            seen_ids = set(line.strip() for line in f)
-
-    unannounced = [c for c in comments if c.id not in seen_ids]
-    if not unannounced:
-        print(f"[Reddit] All comments by u/{username} already announced.")
-        return
-
-    unannounced.sort(key=lambda c: c.created_utc)
-    print(f"[Reddit] Found {len(unannounced)} new comments by u/{username}.")
-
-    for comment in unannounced:
-        embed = create_comment_embed(comment, color)
-        for cid in channels:
-            await bot.rest.create_message(cid, embed=embed)
-        seen_ids.add(comment.id)
-
-    with open(filename, "w") as f:
-        f.write("\n".join(seen_ids))
-
-    print(f"[Reddit] Announced {len(unannounced)} new comments for u/{username}.")
+        for item in unannounced:
+            await send_to_channels(bot, channels, make_embed(item))
+            seen_ids.add(item.id)
+    finally:
+        with open(filename, "w") as f:
+            f.write("\n".join(seen_ids))
 
 
 def create_submission_embed(submission, color):

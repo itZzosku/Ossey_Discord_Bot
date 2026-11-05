@@ -9,3 +9,6 @@ token.json
 /logs/
 /.env
 /.venv
+/venv/
+/reddit/
+__pycache__/

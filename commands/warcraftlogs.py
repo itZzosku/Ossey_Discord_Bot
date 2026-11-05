@@ -29,7 +29,7 @@ async def initialize_log_checks(bot: hikari.GatewayBot, sched: AsyncIOScheduler)
         formatted_url = f"{source['url']}?api_key={warcraft_logs_token}"
         color_int = hex_to_int(source['color'])
         channels = [channel_ids[ch] for ch in source['channels']]
-        cron_schedule = source.get('cron_schedule', '*/5')
+        cron_schedule = source.get('cron_schedule', '*/5 * * * *')
 
         sched.add_job(
             check_and_announce_logs,
@@ -93,7 +93,10 @@ async def announce_new_logs(bot, log, logs_id, filename, color, log_source_name,
     embed = create_log_embed(title, owner, starttimeformatted, endtimeformatted, link, color, log_source_name)
 
     for channel_id in channels:
-        await bot.rest.create_message(channel_id, embed)
+        try:
+            await bot.rest.create_message(channel_id, embed)
+        except Exception as e:
+            print(f"Failed to send logs announcement to channel {channel_id}: {type(e).__name__}: {e}")
 
     previous_logs_ids = []
     if os.path.exists(filename):

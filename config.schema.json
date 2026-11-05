@@ -4,6 +4,13 @@
   "description": "Schema for a configuration with channel_ids, log_sources, and reddit_sources.",
   "type": "object",
   "properties": {
+    "guild_ids": {
+      "type": "array",
+      "description": "Discord server IDs the slash commands are registered in.",
+      "items": {
+        "type": "integer"
+      }
+    },
     "channel_ids": {
       "type": "object",
       "description": "Mapping of custom channel names to numeric IDs.",

@@ -1,8 +1,19 @@
+from urllib.parse import quote
+
+import aiohttp
 import hikari
 import lightbulb
-import lichess.api
+
+LICHESS_USER_URL = "https://lichess.org/api/user/{}"
 
 loader = lightbulb.Loader()
+
+
+def format_perf(perfs: dict, key: str, count_label: str = "Games") -> str:
+    perf = perfs.get(key)
+    if not perf:
+        return "No rated games"
+    return f"**Rating:** {perf.get('rating', 'N/A')} **{count_label}:** {perf.get('games', 0)}"
 
 
 @loader.command
@@ -15,23 +26,30 @@ class Rating(
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        url = LICHESS_USER_URL.format(quote(self.player, safe=""))
         try:
-            user1 = lichess.api.user(self.player)
-        except lichess.api.ApiHttpError:
-            await ctx.respond(f"Player `{self.player}` not found on Lichess.")
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+                async with session.get(url, headers={"Accept": "application/json"}) as response:
+                    if response.status == 404:
+                        await ctx.respond(f"Player `{self.player}` not found on Lichess.")
+                        return
+                    response.raise_for_status()
+                    user = await response.json()
+        except (aiohttp.ClientError, TimeoutError) as e:
+            print(f"[Lichess] Request failed for {self.player}: {type(e).__name__}")
+            await ctx.respond("Couldn't reach Lichess right now, try again later.")
             return
 
-        blitz_rating1 = user1['perfs']['blitz']['rating']
-        blitz_games1 = user1['perfs']['blitz']['games']
-        rapid_rating1 = user1['perfs']['rapid']['rating']
-        rapid_games1 = user1['perfs']['rapid']['games']
-        puzzle_rating1 = user1['perfs']['puzzle']['rating']
-        puzzle_games1 = user1['perfs']['puzzle']['games']
+        if user.get("disabled"):
+            await ctx.respond(f"Player `{self.player}` has closed their Lichess account.")
+            return
 
-        embed = hikari.Embed(title=f'Ratings of the player {self.player}.', color=0xbc0057)
-        embed.add_field(name="Blitz:", value=f'**Rating:** {blitz_rating1} **Games:** {blitz_games1}', inline=False)
-        embed.add_field(name="Rapid:", value=f'**Rating:** {rapid_rating1} **Games:** {rapid_games1}', inline=False)
-        embed.add_field(name="Puzzle:", value=f'**Rating:** {puzzle_rating1} **Puzzles:** {puzzle_games1}',
-                        inline=False)
+        perfs = user.get("perfs", {})
+        name = user.get("username", self.player)
+
+        embed = hikari.Embed(title=f"Ratings of the player {name}.", color=0xbc0057)
+        embed.add_field(name="Blitz:", value=format_perf(perfs, "blitz"), inline=False)
+        embed.add_field(name="Rapid:", value=format_perf(perfs, "rapid"), inline=False)
+        embed.add_field(name="Puzzle:", value=format_perf(perfs, "puzzle", "Puzzles"), inline=False)
 
         await ctx.respond(embed=embed)
